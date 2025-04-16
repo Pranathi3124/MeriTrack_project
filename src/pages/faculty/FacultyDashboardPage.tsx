@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getAllAchievements } from "@/lib/firebase";
@@ -9,11 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import AchievementReviewCard from "@/components/faculty/AchievementReviewCard";
-import { Book, Trophy, Award, CheckCircle, XCircle, Clock, Filter, RefreshCcw } from "lucide-react";
+import { Book, Trophy, Award, CheckCircle, XCircle, Clock, Filter, RefreshCcw, CalendarIcon } from "lucide-react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
+import { format, addDays } from "date-fns";
 import { cn } from "@/lib/utils";
 
 const FacultyDashboardPage = () => {
@@ -21,9 +20,9 @@ const FacultyDashboardPage = () => {
   const [achievements, setAchievements] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
-    branch: "",
-    year: "",
-    category: "",
+    branch: "all",
+    year: "all",
+    category: "all",
     rollNo: "",
     startDate: undefined as Date | undefined,
     endDate: undefined as Date | undefined
@@ -59,18 +58,15 @@ const FacultyDashboardPage = () => {
   
   const handleResetFilters = () => {
     setFilters({
-      branch: "",
-      year: "",
-      category: "",
+      branch: "all",
+      year: "all",
+      category: "all",
       rollNo: "",
       startDate: undefined,
       endDate: undefined
     });
     
-    // Fetch achievements without filters
-    getAllAchievements({}).then((achievementsData) => {
-      setAchievements(achievementsData);
-    });
+    fetchAchievements();
   };
   
   const pendingAchievements = achievements.filter(
@@ -230,8 +226,8 @@ const FacultyDashboardPage = () => {
                           !filters.startDate && "text-muted-foreground"
                         )}
                       >
-                        <Calendar className="mr-2 h-4 w-4" />
-                        {filters.startDate ? format(filters.startDate, "PPP") : "Pick a date"}
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {filters.startDate ? format(filters.startDate, "PPP") : "Pick start date"}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
@@ -240,6 +236,8 @@ const FacultyDashboardPage = () => {
                         selected={filters.startDate}
                         onSelect={(date) => handleFilterChange("startDate", date)}
                         initialFocus
+                        fromDate={new Date(2020, 0, 1)}
+                        toDate={new Date()}
                         className={cn("p-3 pointer-events-auto")}
                       />
                     </PopoverContent>
@@ -257,8 +255,8 @@ const FacultyDashboardPage = () => {
                           !filters.endDate && "text-muted-foreground"
                         )}
                       >
-                        <Calendar className="mr-2 h-4 w-4" />
-                        {filters.endDate ? format(filters.endDate, "PPP") : "Pick a date"}
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {filters.endDate ? format(filters.endDate, "PPP") : "Pick end date"}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
@@ -267,6 +265,8 @@ const FacultyDashboardPage = () => {
                         selected={filters.endDate}
                         onSelect={(date) => handleFilterChange("endDate", date)}
                         initialFocus
+                        fromDate={filters.startDate || new Date(2020, 0, 1)}
+                        toDate={new Date()}
                         className={cn("p-3 pointer-events-auto")}
                       />
                     </PopoverContent>
