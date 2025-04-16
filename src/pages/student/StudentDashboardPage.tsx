@@ -109,13 +109,7 @@ const StudentDashboardPage = () => {
             <CardDescription>Fill in the details of your achievement</CardDescription>
           </CardHeader>
           <CardContent>
-            <AchievementForm 
-              onSuccess={() => {
-                fetchAchievements();
-                setShowAchievementForm(false);
-              }}
-              onCancel={() => setShowAchievementForm(false)}
-            />
+            <AchievementForm />
           </CardContent>
         </Card>
       ) : null}
