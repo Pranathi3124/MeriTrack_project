@@ -167,7 +167,7 @@ const FacultyDashboardPage = () => {
                     <SelectValue placeholder="All branches" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All branches</SelectItem>
+                    <SelectItem value="all">All branches</SelectItem>
                     <SelectItem value="CSE">Computer Science</SelectItem>
                     <SelectItem value="IT">Information Technology</SelectItem>
                     <SelectItem value="ECE">Electronics & Communication</SelectItem>
@@ -188,7 +188,7 @@ const FacultyDashboardPage = () => {
                     <SelectValue placeholder="All years" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All years</SelectItem>
+                    <SelectItem value="all">All years</SelectItem>
                     <SelectItem value="1">1st Year</SelectItem>
                     <SelectItem value="2">2nd Year</SelectItem>
                     <SelectItem value="3">3rd Year</SelectItem>
@@ -207,7 +207,7 @@ const FacultyDashboardPage = () => {
                     <SelectValue placeholder="All categories" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All categories</SelectItem>
+                    <SelectItem value="all">All categories</SelectItem>
                     <SelectItem value="academic">Academic</SelectItem>
                     <SelectItem value="sports">Sports</SelectItem>
                     <SelectItem value="internships">Internships</SelectItem>
@@ -240,6 +240,7 @@ const FacultyDashboardPage = () => {
                         selected={filters.startDate}
                         onSelect={(date) => handleFilterChange("startDate", date)}
                         initialFocus
+                        className={cn("p-3 pointer-events-auto")}
                       />
                     </PopoverContent>
                   </Popover>
@@ -266,6 +267,7 @@ const FacultyDashboardPage = () => {
                         selected={filters.endDate}
                         onSelect={(date) => handleFilterChange("endDate", date)}
                         initialFocus
+                        className={cn("p-3 pointer-events-auto")}
                       />
                     </PopoverContent>
                   </Popover>

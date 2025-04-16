@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,7 +23,6 @@ import Logo from "@/components/Logo";
 import { Eye, EyeOff, User } from "lucide-react";
 import { Link } from "react-router-dom";
 
-// Define form schemas for each role
 const studentSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email format").refine(
@@ -71,7 +69,6 @@ const adminSchema = z.object({
   path: ["confirmPassword"],
 });
 
-// Branch options
 const branchOptions = [
   { value: "CSE", label: "Computer Science Engineering" },
   { value: "IT", label: "Information Technology" },
@@ -81,7 +78,6 @@ const branchOptions = [
   { value: "CIVIL", label: "Civil Engineering" }
 ];
 
-// Year options
 const yearOptions = [
   { value: "1", label: "1st Year" },
   { value: "2", label: "2nd Year" },
@@ -96,7 +92,6 @@ const SignupForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Initialize forms for each role
   const studentForm = useForm<z.infer<typeof studentSchema>>({
     resolver: zodResolver(studentSchema),
     defaultValues: {
@@ -137,7 +132,6 @@ const SignupForm = () => {
   const onSubmitStudent = async (values: z.infer<typeof studentSchema>) => {
     setIsLoading(true);
     try {
-      // Extract data for Firebase
       const { confirmPassword, ...userData } = values;
 
       await signUp(values.email, values.password, "student", userData);
@@ -154,7 +148,6 @@ const SignupForm = () => {
   const onSubmitFaculty = async (values: z.infer<typeof facultySchema>) => {
     setIsLoading(true);
     try {
-      // Extract data for Firebase
       const { confirmPassword, ...userData } = values;
 
       await signUp(values.email, values.password, "faculty", userData);
@@ -171,7 +164,6 @@ const SignupForm = () => {
   const onSubmitAdmin = async (values: z.infer<typeof adminSchema>) => {
     setIsLoading(true);
     try {
-      // Extract data for Firebase
       const { confirmPassword, ...userData } = values;
 
       await signUp(values.email, values.password, "admin", userData);
