@@ -151,7 +151,7 @@ const AuditLogsPage = () => {
                       <SelectValue placeholder="All actions" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All actions</SelectItem>
+                      <SelectItem value="all">All actions</SelectItem>
                       <SelectItem value="login">Login</SelectItem>
                       <SelectItem value="user_created">User Created</SelectItem>
                       <SelectItem value="user_deleted">User Deleted</SelectItem>
@@ -183,6 +183,7 @@ const AuditLogsPage = () => {
                         selected={filters.startDate}
                         onSelect={(date) => handleFilterChange("startDate", date)}
                         initialFocus
+                        className={cn("p-3 pointer-events-auto")}
                       />
                     </PopoverContent>
                   </Popover>
@@ -209,6 +210,7 @@ const AuditLogsPage = () => {
                         selected={filters.endDate}
                         onSelect={(date) => handleFilterChange("endDate", date)}
                         initialFocus
+                        className={cn("p-3 pointer-events-auto")}
                       />
                     </PopoverContent>
                   </Popover>
