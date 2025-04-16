@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -203,7 +203,7 @@ const LoginForm = () => {
         
         <CardFooter className="flex flex-col space-y-4 mt-2">
           <div className="text-sm text-center text-gray-500">
-            Don't have an account? Contact your administrator.
+            Don't have an account? <Link to="/signup" className="text-college-maroon hover:text-college-darkmaroon font-medium">Sign up</Link>
           </div>
         </CardFooter>
       </Card>

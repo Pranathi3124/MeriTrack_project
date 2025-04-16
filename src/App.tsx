@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 // Pages
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/login/LoginPage";
+import SignupPage from "./pages/signup/SignupPage";
 import NotFound from "./pages/NotFound";
 
 // Student Pages
@@ -43,6 +44,7 @@ const App = () => (
             {/* Public Routes */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
             
             {/* Student Routes */}
             <Route path="student" element={<AppLayout requiredRole="student" />}>

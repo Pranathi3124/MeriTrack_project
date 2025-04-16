@@ -1,222 +1,171 @@
 
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { getUserAchievements } from "@/lib/firebase";
-import { toast } from "sonner";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import AchievementForm from "@/components/achievements/AchievementForm";
+import { Medal, Award, TrendingUp, Clipboard, PlusCircle } from "lucide-react";
+import { getUserAchievements } from "@/lib/firebase";
 import AchievementCard from "@/components/achievements/AchievementCard";
-import { Book, Trophy, Award, CheckCircle, XCircle, Clock } from "lucide-react";
+import AchievementForm from "@/components/achievements/AchievementForm";
 
 const StudentDashboardPage = () => {
-  const { user } = useAuth();
+  const { user, userData } = useAuth();
   const [achievements, setAchievements] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  
-  useEffect(() => {
-    const fetchAchievements = async () => {
-      if (!user) return;
-      
-      try {
-        const achievements = await getUserAchievements(user.uid);
-        setAchievements(achievements);
-      } catch (error) {
-        console.error("Error fetching achievements:", error);
-        toast.error("Failed to load achievements");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const [isLoading, setIsLoading] = useState(true);
+  const [showAchievementForm, setShowAchievementForm] = useState(false);
+
+  const fetchAchievements = async () => {
+    if (!user) return;
     
+    setIsLoading(true);
+    try {
+      const achievementsData = await getUserAchievements(user.uid);
+      setAchievements(achievementsData);
+    } catch (error) {
+      console.error("Error fetching achievements:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchAchievements();
   }, [user]);
-  
-  const pendingAchievements = achievements.filter(
-    (achievement) => achievement.status === "pending"
-  );
-  
-  const approvedAchievements = achievements.filter(
-    (achievement) => achievement.status === "approved"
-  );
-  
-  const rejectedAchievements = achievements.filter(
-    (achievement) => achievement.status === "rejected"
-  );
-  
-  // Count achievements by category
-  const categoryCounts = achievements.reduce((acc: Record<string, number>, achievement) => {
-    const category = achievement.category;
-    if (category) {
-      acc[category] = (acc[category] || 0) + 1;
-    }
-    return acc;
-  }, {});
-  
+
+  const getStatusCount = (status: string) => {
+    return achievements.filter(achievement => achievement.status === status).length;
+  };
+
   return (
     <div className="container mx-auto py-8 px-4">
-      <h1 className="text-2xl font-bold mb-6">Student Dashboard</h1>
-      
-      <div className="grid lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="bg-blue-100 p-4 rounded-full">
-              <Trophy className="h-6 w-6 text-blue-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-gray-500">Total Achievements</p>
-              <h2 className="text-3xl font-bold">{achievements.length}</h2>
-            </div>
-          </div>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-college-gray">Student Dashboard</h1>
+          <p className="text-gray-500 mt-1">
+            Welcome back, {userData?.name || "Student"}
+          </p>
         </div>
-        
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="bg-green-100 p-4 rounded-full">
-              <CheckCircle className="h-6 w-6 text-green-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-gray-500">Approved</p>
-              <h2 className="text-3xl font-bold">{approvedAchievements.length}</h2>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="bg-yellow-100 p-4 rounded-full">
-              <Clock className="h-6 w-6 text-yellow-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-gray-500">Pending</p>
-              <h2 className="text-3xl font-bold">{pendingAchievements.length}</h2>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="bg-red-100 p-4 rounded-full">
-              <XCircle className="h-6 w-6 text-red-600" />
-            </div>
-            <div className="ml-4">
-              <p className="text-gray-500">Rejected</p>
-              <h2 className="text-3xl font-bold">{rejectedAchievements.length}</h2>
-            </div>
-          </div>
-        </div>
+        <Button 
+          onClick={() => setShowAchievementForm(true)} 
+          className="mt-4 md:mt-0 bg-college-maroon hover:bg-college-darkmaroon"
+        >
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Add New Achievement
+        </Button>
       </div>
-      
-      <div className="grid md:grid-cols-3 gap-6 mb-8">
-        {Object.entries(categoryCounts).map(([category, count]) => (
-          <div key={category} className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="bg-college-maroon p-4 rounded-full">
-                <Book className="h-6 w-6 text-white" />
-              </div>
-              <div className="ml-4">
-                <p className="text-gray-500">
-                  {category.charAt(0).toUpperCase() + category.slice(1).replace('-', ' ')}
-                </p>
-                <h2 className="text-2xl font-bold">{count}</h2>
-              </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Achievements</CardTitle>
+            <Medal className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{achievements.length}</div>
+            <p className="text-xs text-muted-foreground">Your submitted achievements</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Approved</CardTitle>
+            <Award className="h-4 w-4 text-green-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{getStatusCount("approved")}</div>
+            <p className="text-xs text-muted-foreground">Verified achievements</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Pending</CardTitle>
+            <Clipboard className="h-4 w-4 text-amber-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{getStatusCount("pending")}</div>
+            <p className="text-xs text-muted-foreground">Waiting for verification</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Progress</CardTitle>
+            <TrendingUp className="h-4 w-4 text-blue-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {achievements.length > 0 
+                ? Math.round((getStatusCount("approved") / achievements.length) * 100) 
+                : 0}%
             </div>
-          </div>
+            <p className="text-xs text-muted-foreground">Approval rate</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {showAchievementForm ? (
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Add New Achievement</CardTitle>
+            <CardDescription>Fill in the details of your achievement</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <AchievementForm 
+              onSuccess={() => {
+                fetchAchievements();
+                setShowAchievementForm(false);
+              }}
+              onCancel={() => setShowAchievementForm(false)}
+            />
+          </CardContent>
+        </Card>
+      ) : null}
+
+      <Tabs defaultValue="all" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="all">All Achievements</TabsTrigger>
+          <TabsTrigger value="academic">Academic</TabsTrigger>
+          <TabsTrigger value="sports">Sports</TabsTrigger>
+          <TabsTrigger value="internships">Internships</TabsTrigger>
+          <TabsTrigger value="hackathon">Hackathons</TabsTrigger>
+          <TabsTrigger value="workshops">Workshops</TabsTrigger>
+          <TabsTrigger value="co-curricular">Co-Curricular</TabsTrigger>
+        </TabsList>
+        
+        {["all", "academic", "sports", "internships", "hackathon", "workshops", "co-curricular"].map((category) => (
+          <TabsContent key={category} value={category} className="space-y-4">
+            {isLoading ? (
+              <p>Loading achievements...</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {achievements
+                  .filter(achievement => category === "all" || achievement.category === category)
+                  .map((achievement) => (
+                    <AchievementCard 
+                      key={achievement.id}
+                      achievement={achievement}
+                    />
+                  ))}
+              </div>
+            )}
+            
+            {!isLoading && 
+              achievements.filter(achievement => category === "all" || achievement.category === category).length === 0 && (
+              <Card>
+                <CardContent className="py-8 text-center">
+                  <p className="mb-4 text-gray-500">No achievements found in this category</p>
+                  <Button 
+                    onClick={() => setShowAchievementForm(true)} 
+                    variant="outline"
+                  >
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Add Achievement
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
         ))}
-      </div>
-      
-      <div className="grid md:grid-cols-5 gap-6">
-        <div className="md:col-span-2">
-          <AchievementForm />
-        </div>
-        
-        <div className="md:col-span-3">
-          <Tabs defaultValue="all">
-            <TabsList className="grid grid-cols-4 mb-4">
-              <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="pending">Pending</TabsTrigger>
-              <TabsTrigger value="approved">Approved</TabsTrigger>
-              <TabsTrigger value="rejected">Rejected</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="all" className="mt-0">
-              {loading ? (
-                <div className="text-center p-8">
-                  <div className="w-10 h-10 border-4 border-t-college-maroon border-r-transparent border-b-college-maroon border-l-transparent rounded-full animate-spin mx-auto"></div>
-                  <p className="mt-4">Loading achievements...</p>
-                </div>
-              ) : achievements.length > 0 ? (
-                <div className="grid md:grid-cols-2 gap-4">
-                  {achievements.map((achievement) => (
-                    <AchievementCard key={achievement.id} achievement={achievement} />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center p-8 bg-white rounded-lg shadow">
-                  <Award className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium">No achievements yet</h3>
-                  <p className="text-gray-500">
-                    Add your first achievement using the form.
-                  </p>
-                </div>
-              )}
-            </TabsContent>
-            
-            <TabsContent value="pending" className="mt-0">
-              {pendingAchievements.length > 0 ? (
-                <div className="grid md:grid-cols-2 gap-4">
-                  {pendingAchievements.map((achievement) => (
-                    <AchievementCard key={achievement.id} achievement={achievement} />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center p-8 bg-white rounded-lg shadow">
-                  <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium">No pending achievements</h3>
-                  <p className="text-gray-500">
-                    All of your submissions have been reviewed.
-                  </p>
-                </div>
-              )}
-            </TabsContent>
-            
-            <TabsContent value="approved" className="mt-0">
-              {approvedAchievements.length > 0 ? (
-                <div className="grid md:grid-cols-2 gap-4">
-                  {approvedAchievements.map((achievement) => (
-                    <AchievementCard key={achievement.id} achievement={achievement} />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center p-8 bg-white rounded-lg shadow">
-                  <CheckCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium">No approved achievements</h3>
-                  <p className="text-gray-500">
-                    Your submissions are waiting for faculty approval.
-                  </p>
-                </div>
-              )}
-            </TabsContent>
-            
-            <TabsContent value="rejected" className="mt-0">
-              {rejectedAchievements.length > 0 ? (
-                <div className="grid md:grid-cols-2 gap-4">
-                  {rejectedAchievements.map((achievement) => (
-                    <AchievementCard key={achievement.id} achievement={achievement} />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center p-8 bg-white rounded-lg shadow">
-                  <XCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium">No rejected achievements</h3>
-                  <p className="text-gray-500">
-                    You don't have any rejected submissions.
-                  </p>
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
-        </div>
-      </div>
+      </Tabs>
     </div>
   );
 };
