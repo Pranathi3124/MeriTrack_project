@@ -19,8 +19,10 @@ import {
   Globe,
   ChevronRight,
   Star,
-  Target
+  Target,
+  Sparkles
 } from "lucide-react";
+import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
 
 const LandingPage = () => {
   const [activeSection, setActiveSection] = useState<number>(0);
@@ -49,7 +51,25 @@ const LandingPage = () => {
       
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-college-maroon/90 via-college-darkmaroon to-college-maroon pt-20 pb-28 lg:pt-24 lg:pb-32 text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTQ0MCIgaGVpZ2h0PSI3NzUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IHgxPSI3My42MiUiIHkxPSIyMi40JSeIIHgyPSIyMC43JSIgeTI9IjkwLjY1JSIgaWQ9ImEiPjxzdG9wIHN0b3AtY29sb3I9IiNGRkYiIHN0b3Atb3BhY2l0eT0iMCIgb2Zmc2V0PSIwJSIvPjxzdG9wIHN0b3AtY29sb3I9IiNGRkYiIHN0b3Atb3BhY2l0eT0iLjMyNSIgb2Zmc2V0PSIxMDAlIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHBhdGggZD0ibTI0NC43IDE0Mi44IDQxNSAzODEuMmM0MS4zIDM3LjkgOTcuNyA2NC4xIDE1Ni43IDU4LjEgODkuNi05IDE1Mi41LTg2LjEgMTM3LjgtMTczLjQtMTkuOC0xMTcuNS0xMTYuMy0yMDUuMi0yMzEuNS0yMjAuNi05MS40LTEyLjItMTgxLjMgNi41LTI1Ni42IDUyLTIyLjEgMTMuNC00OS4xIDQzLjctNjcuMyA3MC4yLTE2LjEgMjMuNCAxOS44LTQ5LjkgNzUuOS03MC4yIDYyLjEtMjIuNSAxNDYuNS0xNS45IDIwOC41IDEzLjkgMTI2LjggNjEgMTUzLjkgMjA2LjUgNTkuOSAzMDEuOS00OC4yIDQ4LjktMTI0IDYxLjgtMTg5IDMzLjlDNDkzLjggNTU3LjcgNDQwLjEgNTA2IDQwOS41IDQzNWw1LjcgMTAuOC05LjctMjAuMi05MiA0My41IDQxLjctMTE5LjQiIGZpbGw9InVybCgjYSkiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvc3ZnPg==')]"></div>
+        {/* Abstract Dynamic Background */}
+        <div className="absolute inset-0">
+          <svg className="absolute inset-0 h-full w-full" viewBox="0 0 1440 800" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <linearGradient id="hero-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#8B0000" stopOpacity="0.7"/>
+                <stop offset="100%" stopColor="#5E0000" stopOpacity="0.8"/>
+              </linearGradient>
+              <pattern id="dots-pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+                <circle cx="3" cy="3" r="1.5" fill="white" opacity="0.2"/>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#hero-gradient)"/>
+            <rect width="100%" height="100%" fill="url(#dots-pattern)"/>
+            <path d="M0,128L48,149.3C96,171,192,213,288,229.3C384,245,480,235,576,202.7C672,171,768,117,864,128C960,139,1056,213,1152,229.3C1248,245,1344,203,1392,181.3L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z" fill="white" fillOpacity="0.1"/>
+            <path d="M0,64L48,74.7C96,85,192,107,288,122.7C384,139,480,149,576,144C672,139,768,117,864,133.3C960,149,1056,203,1152,213.3C1248,224,1344,192,1392,176L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z" fill="white" fillOpacity="0.1" transform="rotate(180 720 160)"/>
+          </svg>
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-college-maroon/30"></div>
+        </div>
         
         <div className="container mx-auto px-6 relative z-10">
           <div className="grid md:grid-cols-2 gap-10 lg:gap-20 items-center">
@@ -133,7 +153,7 @@ const LandingPage = () => {
         <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-b from-transparent to-white"></div>
       </section>
       
-      {/* Features Section */}
+      {/* Features Section with Interactive Cards */}
       <section className="py-20 px-6 bg-white relative">
         <div className="container mx-auto">
           <div className="text-center mb-16 animate-on-scroll">
@@ -166,17 +186,33 @@ const LandingPage = () => {
                 description: "Get valuable insights about your academic progress through interactive dashboards and visual analytics."
               }
             ].map((feature, index) => (
-              <div 
-                key={index} 
-                className="relative p-8 border border-gray-100 rounded-2xl bg-white shadow-lg shadow-gray-100/50 hover:shadow-xl hover:scale-105 transition-all duration-300 animate-on-scroll"
-              >
-                <div className="absolute -top-4 -right-4 w-24 h-24 bg-gray-50 rounded-full opacity-50 blur-2xl"></div>
-                <div className="w-12 h-12 rounded-xl bg-white shadow-md flex items-center justify-center mb-6 relative z-10">
-                  {feature.icon}
-                </div>
-                <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
-              </div>
+              <HoverCard key={index}>
+                <HoverCardTrigger asChild>
+                  <div 
+                    className="relative p-8 border border-gray-100 rounded-2xl bg-white shadow-lg shadow-gray-100/50 hover:shadow-xl hover:scale-105 transition-all duration-300 animate-on-scroll cursor-pointer"
+                  >
+                    <div className="absolute -top-4 -right-4 w-24 h-24 bg-gray-50 rounded-full opacity-50 blur-2xl"></div>
+                    <div className="w-12 h-12 rounded-xl bg-white shadow-md flex items-center justify-center mb-6 relative z-10">
+                      {feature.icon}
+                    </div>
+                    <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
+                    <p className="text-gray-600">{feature.description}</p>
+                  </div>
+                </HoverCardTrigger>
+                <HoverCardContent className="w-80 p-5 shadow-lg rounded-xl bg-white border-gray-100">
+                  <div className="space-y-3">
+                    <h4 className="font-bold text-lg flex items-center">
+                      <Sparkles size={18} className="mr-2 text-yellow-500" /> {feature.title}
+                    </h4>
+                    <p className="text-sm text-gray-600">{feature.description}</p>
+                    <div className="pt-2 border-t border-gray-100">
+                      <Link to="/features" className="text-college-maroon font-medium text-sm flex items-center hover:underline">
+                        Learn more about this feature <ChevronRight size={14} className="ml-1" />
+                      </Link>
+                    </div>
+                  </div>
+                </HoverCardContent>
+              </HoverCard>
             ))}
           </div>
         </div>
