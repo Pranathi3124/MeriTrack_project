@@ -418,8 +418,8 @@ const LandingPage = () => {
         </div>
       </footer>
       
-      {/* Add animation keyframes to your CSS (appending to index.css) */}
-      <style jsx>{`
+      {/* Add animation keyframes to your CSS */}
+      <style dangerouslySetInnerHTML={{__html: `
         @keyframes blob {
           0% { transform: translate(0px, 0px) scale(1); }
           33% { transform: translate(30px, -50px) scale(1.1); }
@@ -435,7 +435,7 @@ const LandingPage = () => {
         .animation-delay-4000 {
           animation-delay: 4s;
         }
-      `}</style>
+      `}} />
     </div>
   );
 };
