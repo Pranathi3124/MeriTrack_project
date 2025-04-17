@@ -49,45 +49,53 @@ const LandingPage = () => {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       
-      {/* Hero Section with Campus Photo */}
-      <section className="relative pt-20 pb-28 lg:pt-24 lg:pb-32 text-white overflow-hidden">
-        {/* Campus Photo Background */}
-        <div className="absolute inset-0 z-0">
-          <img 
-            src="/lovable-uploads/da3a3ac1-3093-46ef-9992-3e8fca975445.png" 
-            alt="VNRVJIET Campus" 
-            className="w-full h-full object-cover object-center"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-900/90 via-purple-900/80 to-college-maroon/90"></div>
+      {/* Hero Section */}
+      <section className="bg-gradient-to-r from-college-maroon/90 via-college-darkmaroon to-college-maroon pt-20 pb-28 lg:pt-24 lg:pb-32 text-white relative overflow-hidden">
+        {/* Abstract Dynamic Background */}
+        <div className="absolute inset-0">
+          <svg className="absolute inset-0 h-full w-full" viewBox="0 0 1440 800" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <linearGradient id="hero-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#8B0000" stopOpacity="0.7"/>
+                <stop offset="100%" stopColor="#5E0000" stopOpacity="0.8"/>
+              </linearGradient>
+              <pattern id="dots-pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+                <circle cx="3" cy="3" r="1.5" fill="white" opacity="0.2"/>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#hero-gradient)"/>
+            <rect width="100%" height="100%" fill="url(#dots-pattern)"/>
+            <path d="M0,128L48,149.3C96,171,192,213,288,229.3C384,245,480,235,576,202.7C672,171,768,117,864,128C960,139,1056,213,1152,229.3C1248,245,1344,203,1392,181.3L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z" fill="white" fillOpacity="0.1"/>
+            <path d="M0,64L48,74.7C96,85,192,107,288,122.7C384,139,480,149,576,144C672,139,768,117,864,133.3C960,149,1056,203,1152,213.3C1248,224,1344,192,1392,176L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z" fill="white" fillOpacity="0.1" transform="rotate(180 720 160)"/>
+          </svg>
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-college-maroon/30"></div>
         </div>
         
-        {/* Animated elements */}
-        <div className="absolute inset-0 z-10">
-          <div className="absolute top-20 left-10 w-32 h-32 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
-          <div className="absolute bottom-20 right-10 w-48 h-48 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float"></div>
-          <div className="absolute top-1/3 right-1/4 w-40 h-40 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float animation-delay-2000"></div>
-        </div>
-        
-        <div className="container mx-auto px-6 relative z-20">
+        <div className="container mx-auto px-6 relative z-10">
           <div className="grid md:grid-cols-2 gap-10 lg:gap-20 items-center">
-            <div className="space-y-8">              
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight animate-slideUp">
+            <div className="space-y-8">
+              <div className="inline-flex items-center rounded-full border border-white/30 bg-white/10 px-4 py-1.5 text-sm backdrop-blur-xl">
+                <span className="flex h-2 w-2 rounded-full bg-green-400"></span>
+                <span className="ml-2 text-white/90">Launching Spring 2025</span>
+              </div>
+              
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
                 Track & Showcase Your <span className="relative inline-block">
                   Academic 
                   <svg className="absolute -bottom-1 left-0 w-full" viewBox="0 0 558 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 9C1 9 155 1 279 1C403 1 557 9 557 9" stroke="#6366F1" strokeWidth="10" strokeLinecap="round"/>
+                    <path d="M1 9C1 9 155 1 279 1C403 1 557 9 557 9" stroke="#FFCC80" strokeWidth="10" strokeLinecap="round"/>
                   </svg>
                 </span> Excellence
               </h1>
               
-              <p className="text-xl text-white/90 animate-slideUp animation-delay-300">
+              <p className="text-xl text-white/80">
                 A comprehensive platform that elevates your academic journey by documenting achievements, extracurricular activities, and professional development.
               </p>
               
-              <div className="flex flex-wrap gap-4 animate-slideUp animation-delay-500">
+              <div className="flex flex-wrap gap-4">
                 <Button 
                   asChild
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-6 text-base rounded-xl shadow-lg shadow-indigo-900/30 border border-indigo-500/30 transition-all duration-300 hover:scale-105"
+                  className="bg-white text-college-maroon hover:bg-gray-100 px-6 py-6 text-base rounded-xl shadow-lg shadow-black/5 border border-white/10 transition-all duration-300 hover:scale-105"
                 >
                   <Link to="/signup" className="flex items-center gap-2">
                     Get Started <ArrowRight size={18} />
@@ -104,10 +112,10 @@ const LandingPage = () => {
                 </Button>
               </div>
               
-              <div className="flex items-center pt-4 text-white/90 animate-slideUp animation-delay-700">
+              <div className="flex items-center pt-4 text-white/80">
                 <div className="flex -space-x-2">
                   {[1, 2, 3, 4].map(i => (
-                    <div key={i} className="w-8 h-8 rounded-full border-2 border-indigo-600 bg-white/90 flex items-center justify-center text-xs font-medium text-indigo-600">
+                    <div key={i} className="w-8 h-8 rounded-full border-2 border-college-maroon bg-white/90 flex items-center justify-center text-xs font-medium text-college-maroon">
                       {i}
                     </div>
                   ))}
@@ -116,27 +124,25 @@ const LandingPage = () => {
               </div>
             </div>
             
-            <div className="relative mt-8 md:mt-0 hidden md:block animate-slideLeft">
-              <div className="absolute -top-6 -right-6 w-40 h-40 bg-indigo-300 rounded-full mix-blend-multiply filter blur-2xl opacity-40 animate-blob"></div>
-              <div className="absolute top-0 -left-4 w-40 h-40 bg-purple-300 rounded-full mix-blend-multiply filter blur-2xl opacity-40 animate-blob animation-delay-2000"></div>
-              <div className="absolute -bottom-8 left-20 w-40 h-40 bg-blue-300 rounded-full mix-blend-multiply filter blur-2xl opacity-40 animate-blob animation-delay-4000"></div>
-              <div className="relative p-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-2xl rotate-1 shadow-2xl">
-                <div className="bg-white p-1 rounded-xl overflow-hidden rotate-0">
-                  <img 
-                    src="/lovable-uploads/09ca2645-762c-4dc5-855e-517732e69837.png" 
-                    alt="MeriTrack Platform Preview" 
-                    className="w-full h-auto rounded-lg shadow-inner"
-                  />
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 top-0 bg-gradient-to-tr from-black/10 to-transparent rounded-2xl"></div>
+            <div className="relative mt-8 md:mt-0 hidden md:block">
+              <div className="absolute -top-6 -right-6 w-40 h-40 bg-yellow-300 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob"></div>
+              <div className="absolute top-0 -left-4 w-40 h-40 bg-indigo-300 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob animation-delay-2000"></div>
+              <div className="absolute -bottom-8 left-20 w-40 h-40 bg-pink-300 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob animation-delay-4000"></div>
+              <div className="relative shadow-2xl rounded-2xl overflow-hidden border border-white/20">
+                <img 
+                  src="/lovable-uploads/09ca2645-762c-4dc5-855e-517732e69837.png" 
+                  alt="MeriTrack Platform Preview" 
+                  className="w-full h-auto"
+                />
+                <div className="absolute inset-0 bg-gradient-to-tr from-college-maroon/40 to-transparent"></div>
               </div>
             </div>
           </div>
           
-          <div className="mt-20 pb-8 border-t border-white/10 pt-12">
+          <div className="mt-24 pb-8 border-t border-white/10 pt-16">
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-8">
               {['Trusted by', 'NITs', 'IITs', 'VNR VJIET', 'CBIT', 'MGIT'].map((item, i) => (
-                <div key={i} className={`flex items-center justify-center ${i === 0 ? 'text-white/60 text-sm' : 'text-white font-semibold text-xl'} animate-fadeIn animation-delay-${i*100}`}>
+                <div key={i} className={`flex items-center justify-center ${i === 0 ? 'text-white/60 text-sm' : 'text-white font-semibold text-xl'}`}>
                   {item}
                 </div>
               ))}
@@ -151,7 +157,7 @@ const LandingPage = () => {
       <section className="py-20 px-6 bg-white relative">
         <div className="container mx-auto">
           <div className="text-center mb-16 animate-on-scroll">
-            <div className="inline-flex items-center justify-center rounded-full bg-indigo-100 px-3 py-1 text-sm text-indigo-700 mb-4">
+            <div className="inline-flex items-center justify-center rounded-full bg-college-maroon/10 px-3 py-1 text-sm text-college-maroon mb-4">
               <Trophy size={16} className="mr-1" /> Key Features
             </div>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -200,7 +206,7 @@ const LandingPage = () => {
                     </h4>
                     <p className="text-sm text-gray-600">{feature.description}</p>
                     <div className="pt-2 border-t border-gray-100">
-                      <Link to="/features" className="text-indigo-600 font-medium text-sm flex items-center hover:underline">
+                      <Link to="/features" className="text-college-maroon font-medium text-sm flex items-center hover:underline">
                         Learn more about this feature <ChevronRight size={14} className="ml-1" />
                       </Link>
                     </div>
@@ -213,10 +219,10 @@ const LandingPage = () => {
       </section>
       
       {/* Categories Section */}
-      <section className="py-20 px-6 bg-gradient-to-b from-white to-indigo-50">
+      <section className="py-20 px-6 bg-gray-50">
         <div className="container mx-auto">
           <div className="text-center mb-16 animate-on-scroll">
-            <div className="inline-flex items-center justify-center rounded-full bg-teal-100 px-3 py-1 text-sm text-teal-700 mb-4">
+            <div className="inline-flex items-center justify-center rounded-full bg-green-100 px-3 py-1 text-sm text-green-700 mb-4">
               <Layers size={16} className="mr-1" /> Categories
             </div>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
@@ -230,11 +236,11 @@ const LandingPage = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               {
-                icon: <BookOpen className="h-6 w-6 text-indigo-600" />,
+                icon: <BookOpen className="h-6 w-6 text-college-maroon" />,
                 title: "Academic",
                 description: "Track scholarships, research papers, competitions, and exceptional grades",
-                color: "bg-indigo-50 text-indigo-600",
-                hover: "hover:bg-indigo-600 hover:text-white"
+                color: "bg-red-50 text-college-maroon",
+                hover: "hover:bg-college-maroon hover:text-white"
               },
               {
                 icon: <Trophy className="h-6 w-6 text-blue-600" />,
@@ -244,11 +250,11 @@ const LandingPage = () => {
                 hover: "hover:bg-blue-600 hover:text-white"
               },
               {
-                icon: <Briefcase className="h-6 w-6 text-teal-600" />,
+                icon: <Briefcase className="h-6 w-6 text-green-600" />,
                 title: "Internships",
                 description: "Record professional experiences, internships, and industry projects",
-                color: "bg-teal-50 text-teal-600",
-                hover: "hover:bg-teal-600 hover:text-white"
+                color: "bg-green-50 text-green-600",
+                hover: "hover:bg-green-600 hover:text-white"
               },
               {
                 icon: <Code className="h-6 w-6 text-purple-600" />,
@@ -258,18 +264,18 @@ const LandingPage = () => {
                 hover: "hover:bg-purple-600 hover:text-white"
               },
               {
-                icon: <GraduationCap className="h-6 w-6 text-amber-600" />,
+                icon: <GraduationCap className="h-6 w-6 text-yellow-600" />,
                 title: "Workshops",
                 description: "Track professional development through workshops, certifications and training programs",
-                color: "bg-amber-50 text-amber-600",
-                hover: "hover:bg-amber-600 hover:text-white"
+                color: "bg-yellow-50 text-yellow-600",
+                hover: "hover:bg-yellow-600 hover:text-white"
               },
               {
-                icon: <Activity className="h-6 w-6 text-pink-600" />,
+                icon: <Activity className="h-6 w-6 text-orange-600" />,
                 title: "Co-Curricular",
                 description: "Document leadership roles, club participation, volunteer work, and cultural activities",
-                color: "bg-pink-50 text-pink-600",
-                hover: "hover:bg-pink-600 hover:text-white"
+                color: "bg-orange-50 text-orange-600",
+                hover: "hover:bg-orange-600 hover:text-white"
               }
             ].map((category, index) => (
               <div 
@@ -354,7 +360,7 @@ const LandingPage = () => {
       </section>
       
       {/* Call to Action */}
-      <section className="py-24 px-6 bg-gradient-to-r from-indigo-700 via-purple-700 to-pink-700 text-white">
+      <section className="py-24 px-6 bg-gradient-to-r from-college-darkmaroon via-college-maroon to-college-lightmaroon text-white">
         <div className="container mx-auto">
           <div className="max-w-4xl mx-auto text-center animate-on-scroll">
             <div className="inline-flex items-center justify-center rounded-full bg-white/20 px-3 py-1 text-sm text-white mb-6 backdrop-blur-sm">
@@ -368,7 +374,7 @@ const LandingPage = () => {
               <Button 
                 asChild
                 size="lg"
-                className="bg-white text-indigo-700 hover:bg-gray-100 px-8 py-6 text-lg rounded-xl shadow-lg shadow-indigo-900/20"
+                className="bg-white text-college-maroon hover:bg-gray-100 px-8 py-6 text-lg rounded-xl shadow-lg shadow-college-darkmaroon/20"
               >
                 <Link to="/signup" className="flex items-center gap-2">
                   Create Free Account <ArrowRight size={20} />
@@ -465,60 +471,9 @@ const LandingPage = () => {
         .animation-delay-4000 {
           animation-delay: 4s;
         }
-        @keyframes float {
-          0% { transform: translateY(0); }
-          50% { transform: translateY(-20px); }
-          100% { transform: translateY(0); }
-        }
-        .animate-float {
-          animation: float 15s ease-in-out infinite;
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 0.6; }
-          50% { opacity: 0.3; }
-        }
-        .animate-pulse {
-          animation: pulse 8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        @keyframes slideUp {
-          from { opacity: 0; transform: translateY(30px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-slideUp {
-          animation: slideUp 0.8s ease forwards;
-        }
-        @keyframes slideLeft {
-          from { opacity: 0; transform: translateX(50px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-        .animate-slideLeft {
-          animation: slideLeft 0.8s ease forwards;
-        }
-        .animation-delay-300 {
-          animation-delay: 0.3s;
-        }
-        .animation-delay-500 {
-          animation-delay: 0.5s;
-        }
-        .animation-delay-700 {
-          animation-delay: 0.7s;
-        }
-        .animation-delay-100 {
-          animation-delay: 0.1s;
-        }
-        .animation-delay-200 {
-          animation-delay: 0.2s;
-        }
-        .animation-delay-400 {
-          animation-delay: 0.4s;
-        }
-        .animation-delay-600 {
-          animation-delay: 0.6s;
-        }
       `}} />
     </div>
   );
 };
 
 export default LandingPage;
-
