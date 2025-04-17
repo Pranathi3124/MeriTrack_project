@@ -1,26 +1,19 @@
-
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/layout/Navbar";
 import { 
-  BookOpen, 
-  Trophy, 
-  Briefcase, 
-  Code, 
-  Layers, 
-  Activity, 
-  Shield,
   ArrowRight,
-  CheckCircle,
-  UserPlus,
-  GraduationCap,
-  Award,
-  Globe,
   ChevronRight,
-  Star,
+  Trophy, 
+  Layers, 
+  Code, 
+  Briefcase, 
+  Activity, 
+  Award,
   Target,
-  Sparkles
+  Sparkles,
+  Star
 } from "lucide-react";
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
 
@@ -51,34 +44,9 @@ const LandingPage = () => {
       
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-college-maroon/90 via-college-darkmaroon to-college-maroon pt-20 pb-28 lg:pt-24 lg:pb-32 text-white relative overflow-hidden">
-        {/* Abstract Dynamic Background */}
-        <div className="absolute inset-0">
-          <svg className="absolute inset-0 h-full w-full" viewBox="0 0 1440 800" preserveAspectRatio="xMidYMid slice">
-            <defs>
-              <linearGradient id="hero-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#8B0000" stopOpacity="0.7"/>
-                <stop offset="100%" stopColor="#5E0000" stopOpacity="0.8"/>
-              </linearGradient>
-              <pattern id="dots-pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-                <circle cx="3" cy="3" r="1.5" fill="white" opacity="0.2"/>
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#hero-gradient)"/>
-            <rect width="100%" height="100%" fill="url(#dots-pattern)"/>
-            <path d="M0,128L48,149.3C96,171,192,213,288,229.3C384,245,480,235,576,202.7C672,171,768,117,864,128C960,139,1056,213,1152,229.3C1248,245,1344,203,1392,181.3L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z" fill="white" fillOpacity="0.1"/>
-            <path d="M0,64L48,74.7C96,85,192,107,288,122.7C384,139,480,149,576,144C672,139,768,117,864,133.3C960,149,1056,203,1152,213.3C1248,224,1344,192,1392,176L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z" fill="white" fillOpacity="0.1" transform="rotate(180 720 160)"/>
-          </svg>
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-college-maroon/30"></div>
-        </div>
-        
         <div className="container mx-auto px-6 relative z-10">
           <div className="grid md:grid-cols-2 gap-10 lg:gap-20 items-center">
             <div className="space-y-8">
-              <div className="inline-flex items-center rounded-full border border-white/30 bg-white/10 px-4 py-1.5 text-sm backdrop-blur-xl">
-                <span className="flex h-2 w-2 rounded-full bg-green-400"></span>
-                <span className="ml-2 text-white/90">Launching Spring 2025</span>
-              </div>
-              
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
                 Track & Showcase Your <span className="relative inline-block">
                   Academic 
@@ -111,46 +79,20 @@ const LandingPage = () => {
                   </Link>
                 </Button>
               </div>
-              
-              <div className="flex items-center pt-4 text-white/80">
-                <div className="flex -space-x-2">
-                  {[1, 2, 3, 4].map(i => (
-                    <div key={i} className="w-8 h-8 rounded-full border-2 border-college-maroon bg-white/90 flex items-center justify-center text-xs font-medium text-college-maroon">
-                      {i}
-                    </div>
-                  ))}
-                </div>
-                <span className="ml-3">Join 2000+ students already using MeriTrack</span>
-              </div>
             </div>
             
             <div className="relative mt-8 md:mt-0 hidden md:block">
-              <div className="absolute -top-6 -right-6 w-40 h-40 bg-yellow-300 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob"></div>
-              <div className="absolute top-0 -left-4 w-40 h-40 bg-indigo-300 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob animation-delay-2000"></div>
-              <div className="absolute -bottom-8 left-20 w-40 h-40 bg-pink-300 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob animation-delay-4000"></div>
               <div className="relative shadow-2xl rounded-2xl overflow-hidden border border-white/20">
                 <img 
-                  src="/lovable-uploads/09ca2645-762c-4dc5-855e-517732e69837.png" 
-                  alt="MeriTrack Platform Preview" 
-                  className="w-full h-auto"
+                  src="/lovable-uploads/08042429-71c8-45f9-9e40-2a3a81117228.png" 
+                  alt="MeriTrack Campus" 
+                  className="w-full h-auto object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-tr from-college-maroon/40 to-transparent"></div>
               </div>
             </div>
           </div>
-          
-          <div className="mt-24 pb-8 border-t border-white/10 pt-16">
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-8">
-              {['Trusted by', 'NITs', 'IITs', 'VNR VJIET', 'CBIT', 'MGIT'].map((item, i) => (
-                <div key={i} className={`flex items-center justify-center ${i === 0 ? 'text-white/60 text-sm' : 'text-white font-semibold text-xl'}`}>
-                  {item}
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
-        
-        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-b from-transparent to-white"></div>
       </section>
       
       {/* Features Section with Interactive Cards */}
