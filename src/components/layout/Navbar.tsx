@@ -114,7 +114,7 @@ const Navbar = () => {
                 to="/contact"
                 className="text-gray-700 hover:text-college-maroon font-medium"
               >
-                Contact
+                Contact Us
               </Link>
             </>
           )}
