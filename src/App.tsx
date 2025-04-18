@@ -10,7 +10,6 @@ import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/login/LoginPage";
 import SignupPage from "./pages/signup/SignupPage";
 import NotFound from "./pages/NotFound";
-import ContactPage from "./pages/contact/ContactPage";
 
 // Student Pages
 import StudentDashboardPage from "./pages/student/StudentDashboardPage";
@@ -46,7 +45,6 @@ const App = () => (
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
-            <Route path="/contact" element={<ContactPage />} />
             
             {/* Student Routes */}
             <Route path="student" element={<AppLayout requiredRole="student" />}>
@@ -67,12 +65,6 @@ const App = () => (
               <Route path="reports" element={<ReportsPage />} />
               <Route path="audit" element={<AuditLogsPage />} />
             </Route>
-            
-            {/* Feature Routes */}
-            <Route path="/features/performance" element={<NotFound />} />
-            <Route path="/features/security" element={<NotFound />} />
-            <Route path="/features/updates" element={<NotFound />} />
-            <Route path="/features/achievements" element={<NotFound />} />
             
             {/* Catch-all Route */}
             <Route path="*" element={<NotFound />} />
