@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,11 @@ import {
   Award,
   Target,
   Sparkles,
-  Star
+  Star,
+  CheckCircle,
+  BookOpen,
+  GraduationCap,
+  UserPlus
 } from "lucide-react";
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
 
