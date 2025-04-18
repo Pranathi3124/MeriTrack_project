@@ -21,10 +21,9 @@ const ContactPage = () => {
                   <div>
                     <h3 className="font-semibold">Address</h3>
                     <p className="text-gray-600">
-                      Vardhaman College of Engineering<br />
-                      Kacharam, Shamshabad<br />
-                      Hyderabad - 501218<br />
-                      Telangana, India
+                      Vignana Jyothi Nagar, Pragathi Nagar,<br />
+                      Nizampet (S.O), Hyderabad,<br />
+                      Telangana, India - 500 090
                     </p>
                   </div>
                 </div>
@@ -33,7 +32,7 @@ const ContactPage = () => {
                   <Phone className="w-6 h-6 text-college-maroon" />
                   <div>
                     <h3 className="font-semibold">Phone</h3>
-                    <p className="text-gray-600">+91 8413-253335</p>
+                    <p className="text-gray-600">+91-040-23042758/59/60</p>
                   </div>
                 </div>
 
@@ -41,14 +40,14 @@ const ContactPage = () => {
                   <Mail className="w-6 h-6 text-college-maroon" />
                   <div>
                     <h3 className="font-semibold">Email</h3>
-                    <p className="text-gray-600">info@vardhaman.org</p>
+                    <p className="text-gray-600">postbox@vnrvjiet.ac.in</p>
                   </div>
                 </div>
               </div>
 
               <div className="mt-6">
                 <a 
-                  href="https://maps.google.com/?q=Vardhaman+College+of+Engineering+Hyderabad"
+                  href="https://maps.google.com/?q=VNRVJIET+Hyderabad"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-college-maroon hover:bg-college-darkmaroon focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-college-maroon"
@@ -59,11 +58,21 @@ const ContactPage = () => {
             </CardContent>
           </Card>
 
-          {/* Map Placeholder */}
+          {/* Map */}
           <Card>
             <CardContent className="p-6">
-              <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
-                <p className="text-gray-500">Map View Coming Soon</p>
+              <div className="aspect-video rounded-lg overflow-hidden border border-gray-200">
+                <iframe 
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3804.7894113675954!2d78.38359661485848!3d17.541207987987356!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bcb8e0ab28e0975%3A0x43da81f513d02dab!2sVNR%20Vignana%20Jyothi%20Institute%20of%20Engineering%20%26%20Technology!5e0!3m2!1sen!2sin!4v1650123456789!5m2!1sen!2sin" 
+                  width="100%" 
+                  height="100%" 
+                  style={{ border: 0 }} 
+                  allowFullScreen 
+                  loading="lazy" 
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="VNRVJIET Location"
+                  className="w-full h-full"
+                ></iframe>
               </div>
             </CardContent>
           </Card>
