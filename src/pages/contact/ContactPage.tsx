@@ -2,11 +2,16 @@
 import React from 'react';
 import { MapPin, Phone, Mail } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
+import Logo from "@/components/Logo";
 
 const ContactPage = () => {
   return (
     <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
+        <div className="flex justify-center mb-8">
+          <Logo />
+        </div>
+
         <h1 className="text-4xl font-bold text-center mb-8 text-college-maroon">Contact Us</h1>
         
         <div className="grid md:grid-cols-2 gap-8">
@@ -78,6 +83,12 @@ const ContactPage = () => {
           </Card>
         </div>
       </div>
+
+      <footer className="py-6 bg-gray-800 text-white mt-12">
+        <div className="container mx-auto text-center">
+          <p>© {new Date().getFullYear()} MeriTrack. All rights reserved.</p>
+        </div>
+      </footer>
     </div>
   );
 };
