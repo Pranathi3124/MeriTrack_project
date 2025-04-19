@@ -16,29 +16,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { format, addDays } from "date-fns";
 import { cn } from "@/lib/utils";
-
-// Define the Achievement type to fix the error
-type Achievement = {
-  id: string;
-  title: string;
-  category: string;
-  description: string;
-  date: Date | any;
-  documentURL?: string;
-  documentName?: string;
-  status: "pending" | "approved" | "rejected";
-  createdAt: any;
-  studentName: string;
-  studentEmail: string;
-  rollNo: string;
-  branch: string;
-  year: string;
-  userId: string;
-};
+import { Achievement } from "@/lib/firebase";
 
 const FacultyDashboardPage = () => {
   const { user } = useAuth();
   const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [filteredAchievements, setFilteredAchievements] = useState<Achievement[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     branch: "all",
@@ -49,15 +32,19 @@ const FacultyDashboardPage = () => {
     endDate: undefined as Date | undefined
   });
   const [activeTab, setActiveTab] = useState("pending");
+  const [showFilters, setShowFilters] = useState(true);
   
   const fetchAchievements = async () => {
     if (!user) return;
     
     setLoading(true);
     try {
-      const achievementsData = await getAllAchievements(filters);
-      // Explicitly cast the returned data to the Achievement type
-      setAchievements(achievementsData as Achievement[]);
+      // Get all achievements without server-side filtering for more flexible client-side filtering
+      const achievementsData = await getAllAchievements();
+      setAchievements(achievementsData);
+      
+      // Apply filters client-side
+      applyFilters(achievementsData);
       
       // Show notification if there are pending achievements
       const pendingCount = achievementsData.filter(a => a.status === "pending").length;
@@ -77,6 +64,63 @@ const FacultyDashboardPage = () => {
     }
   };
   
+  // Apply filters client-side for better performance and real-time feedback
+  const applyFilters = (data: Achievement[] = achievements) => {
+    let filtered = [...data];
+    
+    // Filter by branch
+    if (filters.branch !== "all") {
+      filtered = filtered.filter(a => a.branch === filters.branch);
+    }
+    
+    // Filter by year
+    if (filters.year !== "all") {
+      filtered = filtered.filter(a => a.year === filters.year);
+    }
+    
+    // Filter by category
+    if (filters.category !== "all") {
+      filtered = filtered.filter(a => a.category === filters.category);
+    }
+    
+    // Filter by roll number
+    if (filters.rollNo && filters.rollNo.trim() !== "") {
+      filtered = filtered.filter(a => 
+        a.rollNo && a.rollNo.toLowerCase().includes(filters.rollNo.toLowerCase())
+      );
+    }
+    
+    // Filter by date range
+    if (filters.startDate && filters.endDate) {
+      const start = new Date(filters.startDate);
+      const end = new Date(filters.endDate);
+      end.setHours(23, 59, 59);  // Include the entire end day
+      
+      filtered = filtered.filter(a => {
+        if (!a.date) return false;
+        const achievementDate = a.date instanceof Date ? a.date : new Date(a.date.seconds * 1000);
+        return achievementDate >= start && achievementDate <= end;
+      });
+    } else if (filters.startDate) {
+      const start = new Date(filters.startDate);
+      filtered = filtered.filter(a => {
+        if (!a.date) return false;
+        const achievementDate = a.date instanceof Date ? a.date : new Date(a.date.seconds * 1000);
+        return achievementDate >= start;
+      });
+    } else if (filters.endDate) {
+      const end = new Date(filters.endDate);
+      end.setHours(23, 59, 59);  // Include the entire end day
+      filtered = filtered.filter(a => {
+        if (!a.date) return false;
+        const achievementDate = a.date instanceof Date ? a.date : new Date(a.date.seconds * 1000);
+        return achievementDate <= end;
+      });
+    }
+    
+    setFilteredAchievements(filtered);
+  };
+  
   useEffect(() => {
     fetchAchievements();
     
@@ -86,15 +130,15 @@ const FacultyDashboardPage = () => {
     }, 5 * 60 * 1000);
     
     return () => clearInterval(intervalId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
   
-  const handleFilterChange = (name: string, value: string | Date | undefined) => {
-    setFilters((prev) => ({ ...prev, [name]: value }));
-  };
+  // Apply filters whenever filters state changes
+  useEffect(() => {
+    applyFilters();
+  }, [filters]);
   
-  const handleApplyFilters = () => {
-    fetchAchievements();
+  const handleFilterChange = (name: string, value: string | Date | undefined) => {
+    setFilters(prev => ({ ...prev, [name]: value }));
   };
   
   const handleResetFilters = () => {
@@ -106,21 +150,25 @@ const FacultyDashboardPage = () => {
       startDate: undefined,
       endDate: undefined
     });
-    
-    fetchAchievements();
   };
   
-  const pendingAchievements = achievements.filter(
+  // Create status-filtered arrays for each tab
+  const pendingAchievements = filteredAchievements.filter(
     (achievement) => achievement.status === "pending"
   );
   
-  const approvedAchievements = achievements.filter(
+  const approvedAchievements = filteredAchievements.filter(
     (achievement) => achievement.status === "approved"
   );
   
-  const rejectedAchievements = achievements.filter(
+  const rejectedAchievements = filteredAchievements.filter(
     (achievement) => achievement.status === "rejected"
   );
+  
+  // Toggle filters visibility
+  const toggleFilters = () => {
+    setShowFilters(!showFilters);
+  };
   
   return (
     <div className="container mx-auto py-8 px-4">
@@ -134,7 +182,7 @@ const FacultyDashboardPage = () => {
             </div>
             <div className="ml-4">
               <p className="text-gray-500">Total Submissions</p>
-              <h2 className="text-3xl font-bold">{achievements.length}</h2>
+              <h2 className="text-3xl font-bold">{filteredAchievements.length}</h2>
             </div>
           </div>
         </div>
@@ -182,6 +230,175 @@ const FacultyDashboardPage = () => {
         </div>
       </div>
       
+      <div className="mb-6 flex justify-between items-center">
+        <Button 
+          onClick={toggleFilters} 
+          variant={showFilters ? "outline" : "default"}
+          className="flex gap-2 items-center"
+        >
+          <Filter className="h-4 w-4" />
+          {showFilters ? "Hide Filters" : "Show Filters"}
+        </Button>
+        
+        <div className="flex gap-4">
+          <Button 
+            variant="outline" 
+            onClick={handleResetFilters}
+            className="flex gap-2 items-center"
+          >
+            <RefreshCcw className="h-4 w-4" />
+            Reset Filters
+          </Button>
+          
+          <Button
+            onClick={fetchAchievements}
+            className="flex gap-2 items-center"
+          >
+            <RefreshCcw className="h-4 w-4" />
+            Refresh Data
+          </Button>
+        </div>
+      </div>
+      
+      {showFilters && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Filter Achievements</CardTitle>
+            <CardDescription>Filter students' achievements by various parameters</CardDescription>
+          </CardHeader>
+          <CardContent className="grid md:grid-cols-5 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="rollNo">Roll Number</Label>
+              <Input
+                id="rollNo"
+                value={filters.rollNo}
+                onChange={(e) => handleFilterChange("rollNo", e.target.value)}
+                placeholder="Enter roll number"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="branch">Branch</Label>
+              <Select
+                value={filters.branch}
+                onValueChange={(value) => handleFilterChange("branch", value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="All branches" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All branches</SelectItem>
+                  <SelectItem value="CSE">Computer Science</SelectItem>
+                  <SelectItem value="IT">Information Technology</SelectItem>
+                  <SelectItem value="ECE">Electronics & Communication</SelectItem>
+                  <SelectItem value="EEE">Electrical & Electronics</SelectItem>
+                  <SelectItem value="MECH">Mechanical</SelectItem>
+                  <SelectItem value="CIVIL">Civil</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="year">Year</Label>
+              <Select
+                value={filters.year}
+                onValueChange={(value) => handleFilterChange("year", value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="All years" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All years</SelectItem>
+                  <SelectItem value="1">1st Year</SelectItem>
+                  <SelectItem value="2">2nd Year</SelectItem>
+                  <SelectItem value="3">3rd Year</SelectItem>
+                  <SelectItem value="4">4th Year</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="category">Category</Label>
+              <Select
+                value={filters.category}
+                onValueChange={(value) => handleFilterChange("category", value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="All categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All categories</SelectItem>
+                  <SelectItem value="academic">Academic</SelectItem>
+                  <SelectItem value="sports">Sports</SelectItem>
+                  <SelectItem value="internships">Internships</SelectItem>
+                  <SelectItem value="hackathon">Hackathon</SelectItem>
+                  <SelectItem value="workshops">Workshops</SelectItem>
+                  <SelectItem value="co-curricular">Co-curricular Activities</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2 grid grid-cols-2 gap-2">
+              <div>
+                <Label>Start Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !filters.startDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {filters.startDate ? format(filters.startDate, "PP") : "Pick date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={filters.startDate}
+                      onSelect={(date) => handleFilterChange("startDate", date)}
+                      initialFocus
+                      fromDate={new Date(2020, 0, 1)}
+                      toDate={new Date()}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              
+              <div>
+                <Label>End Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !filters.endDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {filters.endDate ? format(filters.endDate, "PP") : "Pick date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={filters.endDate}
+                      onSelect={(date) => handleFilterChange("endDate", date)}
+                      initialFocus
+                      fromDate={filters.startDate || new Date(2020, 0, 1)}
+                      toDate={new Date()}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+      
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="grid grid-cols-4 mb-4">
           <TabsTrigger value="pending" className="relative">
@@ -200,247 +417,108 @@ const FacultyDashboardPage = () => {
             Statistics
           </TabsTrigger>
         </TabsList>
-        
-        <div className="grid md:grid-cols-5 gap-6">
-          <div className={`md:col-span-${activeTab === "statistics" ? "5" : "2"} ${activeTab !== "statistics" ? "block" : "hidden"}`}>
-            <Card>
-              <CardHeader>
-                <CardTitle>Filter Achievements</CardTitle>
-                <CardDescription>Filter students' achievements by various parameters</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="rollNo">Roll Number</Label>
-                  <Input
-                    id="rollNo"
-                    value={filters.rollNo}
-                    onChange={(e) => handleFilterChange("rollNo", e.target.value)}
-                    placeholder="Enter roll number"
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="branch">Branch</Label>
-                  <Select
-                    value={filters.branch}
-                    onValueChange={(value) => handleFilterChange("branch", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="All branches" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All branches</SelectItem>
-                      <SelectItem value="CSE">Computer Science</SelectItem>
-                      <SelectItem value="IT">Information Technology</SelectItem>
-                      <SelectItem value="ECE">Electronics & Communication</SelectItem>
-                      <SelectItem value="EEE">Electrical & Electronics</SelectItem>
-                      <SelectItem value="MECH">Mechanical</SelectItem>
-                      <SelectItem value="CIVIL">Civil</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="year">Year</Label>
-                  <Select
-                    value={filters.year}
-                    onValueChange={(value) => handleFilterChange("year", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="All years" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All years</SelectItem>
-                      <SelectItem value="1">1st Year</SelectItem>
-                      <SelectItem value="2">2nd Year</SelectItem>
-                      <SelectItem value="3">3rd Year</SelectItem>
-                      <SelectItem value="4">4th Year</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="category">Category</Label>
-                  <Select
-                    value={filters.category}
-                    onValueChange={(value) => handleFilterChange("category", value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="All categories" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All categories</SelectItem>
-                      <SelectItem value="academic">Academic</SelectItem>
-                      <SelectItem value="sports">Sports</SelectItem>
-                      <SelectItem value="internships">Internships</SelectItem>
-                      <SelectItem value="hackathon">Hackathon</SelectItem>
-                      <SelectItem value="workshops">Workshops</SelectItem>
-                      <SelectItem value="co-curricular">Co-curricular Activities</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Start Date</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-start text-left font-normal",
-                            !filters.startDate && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {filters.startDate ? format(filters.startDate, "PPP") : "Pick start date"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={filters.startDate}
-                          onSelect={(date) => handleFilterChange("startDate", date)}
-                          initialFocus
-                          fromDate={new Date(2020, 0, 1)}
-                          toDate={new Date()}
-                          className={cn("p-3 pointer-events-auto")}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>End Date</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-start text-left font-normal",
-                            !filters.endDate && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {filters.endDate ? format(filters.endDate, "PPP") : "Pick end date"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={filters.endDate}
-                          onSelect={(date) => handleFilterChange("endDate", date)}
-                          initialFocus
-                          fromDate={filters.startDate || new Date(2020, 0, 1)}
-                          toDate={new Date()}
-                          className={cn("p-3 pointer-events-auto")}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter className="flex flex-col space-y-2">
-                <Button 
-                  className="w-full bg-college-maroon hover:bg-college-darkmaroon"
-                  onClick={handleApplyFilters}
-                >
-                  <Filter className="mr-2 h-4 w-4" />
-                  Apply Filters
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={handleResetFilters}
-                >
-                  <RefreshCcw className="mr-2 h-4 w-4" />
-                  Reset Filters
-                </Button>
-              </CardFooter>
-            </Card>
-          </div>
-          
-          <div className={`md:col-span-${activeTab === "statistics" ? "5" : "3"} ${activeTab === "statistics" ? "block" : activeTab === "pending" || activeTab === "approved" || activeTab === "rejected" ? "block" : "hidden"}`}>
-            {activeTab === "statistics" ? (
-              <AchievementStats achievements={achievements} />
-            ) : activeTab === "pending" ? (
-              loading ? (
-                <div className="text-center p-8">
-                  <div className="w-10 h-10 border-4 border-t-college-maroon border-r-transparent border-b-college-maroon border-l-transparent rounded-full animate-spin mx-auto"></div>
-                  <p className="mt-4">Loading achievements...</p>
-                </div>
-              ) : pendingAchievements.length > 0 ? (
-                <div className="grid md:grid-cols-2 gap-4">
-                  {pendingAchievements.map((achievement) => (
-                    <AchievementReviewCard 
-                      key={achievement.id} 
-                      achievement={achievement}
-                      onStatusUpdate={fetchAchievements}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center p-8 bg-white rounded-lg shadow">
-                  <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium">No pending achievements</h3>
-                  <p className="text-gray-500">
-                    All achievements have been reviewed.
-                  </p>
-                </div>
-              )
-            ) : activeTab === "approved" ? (
-              loading ? (
-                <div className="text-center p-8">
-                  <div className="w-10 h-10 border-4 border-t-college-maroon border-r-transparent border-b-college-maroon border-l-transparent rounded-full animate-spin mx-auto"></div>
-                  <p className="mt-4">Loading achievements...</p>
-                </div>
-              ) : approvedAchievements.length > 0 ? (
-                <div className="grid md:grid-cols-2 gap-4">
-                  {approvedAchievements.map((achievement) => (
-                    <AchievementReviewCard 
-                      key={achievement.id} 
-                      achievement={achievement} 
-                      onStatusUpdate={fetchAchievements}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center p-8 bg-white rounded-lg shadow">
-                  <CheckCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium">No approved achievements</h3>
-                  <p className="text-gray-500">
-                    You haven't approved any achievements yet.
-                  </p>
-                </div>
-              )
-            ) : activeTab === "rejected" ? (
-              loading ? (
-                <div className="text-center p-8">
-                  <div className="w-10 h-10 border-4 border-t-college-maroon border-r-transparent border-b-college-maroon border-l-transparent rounded-full animate-spin mx-auto"></div>
-                  <p className="mt-4">Loading achievements...</p>
-                </div>
-              ) : rejectedAchievements.length > 0 ? (
-                <div className="grid md:grid-cols-2 gap-4">
-                  {rejectedAchievements.map((achievement) => (
-                    <AchievementReviewCard 
-                      key={achievement.id} 
-                      achievement={achievement} 
-                      onStatusUpdate={fetchAchievements}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center p-8 bg-white rounded-lg shadow">
-                  <XCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium">No rejected achievements</h3>
-                  <p className="text-gray-500">
-                    You haven't rejected any achievements.
-                  </p>
-                </div>
-              )
-            ) : null}
-          </div>
-        </div>
+
+        {/* Pending Tab */}
+        <TabsContent value="pending" className="space-y-4">
+          {loading ? (
+            <div className="text-center p-8">
+              <div className="w-10 h-10 border-4 border-t-college-maroon border-r-transparent border-b-college-maroon border-l-transparent rounded-full animate-spin mx-auto"></div>
+              <p className="mt-4">Loading achievements...</p>
+            </div>
+          ) : pendingAchievements.length > 0 ? (
+            <div className="grid md:grid-cols-2 gap-4">
+              {pendingAchievements.map((achievement) => (
+                <AchievementReviewCard 
+                  key={achievement.id} 
+                  achievement={achievement}
+                  onStatusUpdate={fetchAchievements}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center p-8 bg-white rounded-lg shadow">
+              <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium">No pending achievements</h3>
+              <p className="text-gray-500">
+                {achievements.length > 0 
+                  ? "No pending achievements match your current filter criteria." 
+                  : "All achievements have been reviewed."}
+              </p>
+            </div>
+          )}
+        </TabsContent>
+            
+        {/* Approved Tab */}
+        <TabsContent value="approved" className="space-y-4">
+          {loading ? (
+            <div className="text-center p-8">
+              <div className="w-10 h-10 border-4 border-t-college-maroon border-r-transparent border-b-college-maroon border-l-transparent rounded-full animate-spin mx-auto"></div>
+              <p className="mt-4">Loading achievements...</p>
+            </div>
+          ) : approvedAchievements.length > 0 ? (
+            <div className="grid md:grid-cols-2 gap-4">
+              {approvedAchievements.map((achievement) => (
+                <AchievementReviewCard 
+                  key={achievement.id} 
+                  achievement={achievement} 
+                  onStatusUpdate={fetchAchievements}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center p-8 bg-white rounded-lg shadow">
+              <CheckCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium">No approved achievements</h3>
+              <p className="text-gray-500">
+                {achievements.length > 0 
+                  ? "No approved achievements match your current filter criteria." 
+                  : "You haven't approved any achievements yet."}
+              </p>
+            </div>
+          )}
+        </TabsContent>
+            
+        {/* Rejected Tab */}
+        <TabsContent value="rejected" className="space-y-4">
+          {loading ? (
+            <div className="text-center p-8">
+              <div className="w-10 h-10 border-4 border-t-college-maroon border-r-transparent border-b-college-maroon border-l-transparent rounded-full animate-spin mx-auto"></div>
+              <p className="mt-4">Loading achievements...</p>
+            </div>
+          ) : rejectedAchievements.length > 0 ? (
+            <div className="grid md:grid-cols-2 gap-4">
+              {rejectedAchievements.map((achievement) => (
+                <AchievementReviewCard 
+                  key={achievement.id} 
+                  achievement={achievement} 
+                  onStatusUpdate={fetchAchievements}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center p-8 bg-white rounded-lg shadow">
+              <XCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium">No rejected achievements</h3>
+              <p className="text-gray-500">
+                {achievements.length > 0 
+                  ? "No rejected achievements match your current filter criteria." 
+                  : "You haven't rejected any achievements."}
+              </p>
+            </div>
+          )}
+        </TabsContent>
+            
+        {/* Statistics Tab */}
+        <TabsContent value="statistics" className="space-y-4">
+          {loading ? (
+            <div className="text-center p-8">
+              <div className="w-10 h-10 border-4 border-t-college-maroon border-r-transparent border-b-college-maroon border-l-transparent rounded-full animate-spin mx-auto"></div>
+              <p className="mt-4">Loading statistics...</p>
+            </div>
+          ) : (
+            <AchievementStats achievements={filteredAchievements} />
+          )}
+        </TabsContent>
       </Tabs>
     </div>
   );
