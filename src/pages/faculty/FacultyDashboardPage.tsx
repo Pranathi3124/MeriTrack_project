@@ -91,21 +91,6 @@ const FacultyDashboardPage = () => {
         const achievementDate = a.date instanceof Date ? a.date : new Date(a.date.seconds * 1000);
         return achievementDate >= start && achievementDate <= end;
       });
-    } else if (filters.startDate) {
-      const start = new Date(filters.startDate);
-      filtered = filtered.filter(a => {
-        if (!a.date) return false;
-        const achievementDate = a.date instanceof Date ? a.date : new Date(a.date.seconds * 1000);
-        return achievementDate >= start;
-      });
-    } else if (filters.endDate) {
-      const end = new Date(filters.endDate);
-      end.setHours(23, 59, 59);
-      filtered = filtered.filter(a => {
-        if (!a.date) return false;
-        const achievementDate = a.date instanceof Date ? a.date : new Date(a.date.seconds * 1000);
-        return achievementDate <= end;
-      });
     }
     
     setFilteredAchievements(filtered);
@@ -122,8 +107,8 @@ const FacultyDashboardPage = () => {
   }, [user]);
   
   useEffect(() => {
-    applyFilters();
-  }, [filters]);
+    setFilteredAchievements(achievements);
+  }, [achievements]);
   
   const handleFilterChange = (name: string, value: string | Date | undefined) => {
     setFilters(prev => ({ ...prev, [name]: value }));
@@ -138,6 +123,7 @@ const FacultyDashboardPage = () => {
       startDate: undefined,
       endDate: undefined
     });
+    setFilteredAchievements(achievements);
   };
   
   const pendingAchievements = filteredAchievements.filter(
@@ -340,7 +326,7 @@ const FacultyDashboardPage = () => {
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {filters.startDate ? format(filters.startDate, "PP") : "Pick date"}
+                        {filters.startDate ? format(filters.startDate, "PP") : "Pick start date"}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
@@ -368,7 +354,7 @@ const FacultyDashboardPage = () => {
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {filters.endDate ? format(filters.endDate, "PP") : "Pick date"}
+                        {filters.endDate ? format(filters.endDate, "PP") : "Pick end date"}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">

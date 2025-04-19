@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -47,70 +48,27 @@ const AchievementStats: React.FC<AchievementStatProps> = ({ achievements }) => {
 
   const COLORS = ['#FFBB28', '#00C49F', '#FF8042'];
 
-  // If no achievements, show zeros but keep the charts
-  if (achievements.length === 0) {
-    const emptyData = [
-      { name: 'Pending', value: 0 },
-      { name: 'Approved', value: 0 },
-      { name: 'Rejected', value: 0 },
-    ];
+  const emptyYearData = [
+    { name: 'Year 1', count: 0 },
+    { name: 'Year 2', count: 0 },
+    { name: 'Year 3', count: 0 },
+    { name: 'Year 4', count: 0 },
+  ];
 
-    return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Achievements by Year (0 achievements)</CardTitle>
-            </CardHeader>
-            <CardContent className="h-80">
-              <div className="flex items-center justify-center h-full text-gray-500">
-                No achievements found
-              </div>
-            </CardContent>
-          </Card>
+  const emptyBranchData = [
+    { name: 'CSE', value: 0 },
+    { name: 'IT', value: 0 },
+    { name: 'ECE', value: 0 },
+    { name: 'EEE', value: 0 },
+    { name: 'MECH', value: 0 },
+    { name: 'CIVIL', value: 0 },
+  ];
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Achievements by Status (0 achievements)</CardTitle>
-            </CardHeader>
-            <CardContent className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={emptyData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    dataKey="value"
-                    label={({ name }) => `${name} 0%`}
-                  >
-                    {emptyData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Achievements by Branch (0 achievements)</CardTitle>
-          </CardHeader>
-          <CardContent className="h-80">
-            <div className="flex items-center justify-center h-full text-gray-500">
-              No achievements found
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  const emptyStatusData = [
+    { name: 'Pending', value: 0 },
+    { name: 'Approved', value: 0 },
+    { name: 'Rejected', value: 0 },
+  ];
 
   return (
     <div className="space-y-6">
@@ -122,7 +80,7 @@ const AchievementStats: React.FC<AchievementStatProps> = ({ achievements }) => {
           <CardContent className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
-                data={yearData}
+                data={achievements.length ? yearData : emptyYearData}
                 margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
@@ -144,7 +102,7 @@ const AchievementStats: React.FC<AchievementStatProps> = ({ achievements }) => {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={statusData}
+                  data={achievements.length ? statusData : emptyStatusData}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
@@ -153,7 +111,7 @@ const AchievementStats: React.FC<AchievementStatProps> = ({ achievements }) => {
                   dataKey="value"
                   label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                 >
-                  {statusData.map((entry, index) => (
+                  {(achievements.length ? statusData : emptyStatusData).map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
@@ -172,7 +130,7 @@ const AchievementStats: React.FC<AchievementStatProps> = ({ achievements }) => {
         <CardContent className="h-80">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
-              data={branchData}
+              data={achievements.length ? branchData : emptyBranchData}
               margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
               layout="vertical"
             >

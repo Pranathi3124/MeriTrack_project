@@ -66,14 +66,7 @@ const Navbar = () => {
           <Logo />
         </Link>
 
-        <div className="flex items-center space-x-6 ml-auto">
-          <Link 
-            to="/"
-            className="text-gray-700 hover:text-college-maroon font-medium"
-          >
-            Home
-          </Link>
-          
+        <div className="flex items-center gap-6">
           {user ? (
             <>
               <Link 
@@ -99,26 +92,7 @@ const Navbar = () => {
                   </Link>
                 </>
               )}
-            </>
-          ) : (
-            <>
-              <Link 
-                to="/about"
-                className="text-gray-700 hover:text-college-maroon font-medium"
-              >
-                About
-              </Link>
-              <Link 
-                to="/contact"
-                className="text-gray-700 hover:text-college-maroon font-medium"
-              >
-                Contact Us
-              </Link>
-            </>
-          )}
 
-          <div className="flex items-center space-x-4">
-            {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" className="rounded-full w-10 h-10 p-0">
@@ -164,15 +138,35 @@ const Navbar = () => {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            ) : (
+            </>
+          ) : (
+            <>
+              <Link 
+                to="/"
+                className="text-gray-700 hover:text-college-maroon font-medium"
+              >
+                Home
+              </Link>
+              <Link 
+                to="/about"
+                className="text-gray-700 hover:text-college-maroon font-medium"
+              >
+                About
+              </Link>
+              <Link 
+                to="/contact"
+                className="text-gray-700 hover:text-college-maroon font-medium"
+              >
+                Contact Us
+              </Link>
               <Button 
                 onClick={() => navigate("/login")}
                 className="bg-college-maroon hover:bg-college-darkmaroon"
               >
                 Sign In
               </Button>
-            )}
-          </div>
+            </>
+          )}
         </div>
       </div>
     </nav>
