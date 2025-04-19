@@ -1,14 +1,42 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UserPen, Users, BookOpen, Medal, Activity } from "lucide-react";
-import { getAllUsers, addAuditLog } from "@/lib/firebase";
+import { UserPen, Users, BookOpen, Medal, Activity, FileText, Clock } from "lucide-react";
+import { getAllUsers, addAuditLog, getAuditLogs } from "@/lib/firebase";
 import UserManagement from "@/components/admin/UserManagement";
+import { 
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { format } from "date-fns";
 
 const AdminDashboardPage = () => {
   const { userData } = useAuth();
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch audit logs when the component mounts
+  useEffect(() => {
+    const fetchAuditLogs = async () => {
+      try {
+        setLoading(true);
+        const logs = await getAuditLogs({ limit: 10 });
+        setAuditLogs(logs);
+      } catch (error) {
+        console.error("Error fetching audit logs:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAuditLogs();
+  }, []);
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -90,7 +118,46 @@ const AdminDashboardPage = () => {
               <CardTitle>Recent Audit Logs</CardTitle>
             </CardHeader>
             <CardContent>
-              <p>Audit logs will appear here</p>
+              {loading ? (
+                <div className="flex justify-center items-center p-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-college-maroon"></div>
+                </div>
+              ) : auditLogs.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Action</TableHead>
+                      <TableHead>User</TableHead>
+                      <TableHead>Timestamp</TableHead>
+                      <TableHead>Details</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {auditLogs.map((log) => (
+                      <TableRow key={log.id}>
+                        <TableCell>{log.action}</TableCell>
+                        <TableCell>{log.userId}</TableCell>
+                        <TableCell>
+                          {log.timestamp && log.timestamp.toDate ? 
+                            format(log.timestamp.toDate(), 'MMM dd, yyyy HH:mm') : 
+                            'N/A'}
+                        </TableCell>
+                        <TableCell className="max-w-xs truncate">
+                          {typeof log.details === 'object' ? 
+                            JSON.stringify(log.details).substring(0, 50) + '...' : 
+                            String(log.details).substring(0, 50)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="text-center p-6">
+                  <FileText className="mx-auto h-12 w-12 text-gray-400" />
+                  <p className="mt-2 text-lg font-semibold">No audit logs found</p>
+                  <p className="text-sm text-gray-500">Audit logs will appear here when users perform actions</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
