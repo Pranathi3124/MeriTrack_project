@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -48,18 +47,67 @@ const AchievementStats: React.FC<AchievementStatProps> = ({ achievements }) => {
 
   const COLORS = ['#FFBB28', '#00C49F', '#FF8042'];
 
-  // If no achievements, show a message
+  // If no achievements, show zeros but keep the charts
   if (achievements.length === 0) {
+    const emptyData = [
+      { name: 'Pending', value: 0 },
+      { name: 'Approved', value: 0 },
+      { name: 'Rejected', value: 0 },
+    ];
+
     return (
-      <div className="flex flex-col items-center justify-center h-80 bg-white rounded-lg shadow p-6">
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-        <h3 className="text-xl font-medium mb-2">No achievements found</h3>
-        <p className="text-gray-500 text-center">
-          No achievements match your current filter criteria.
-          <br />Try adjusting your filters to see more results.
-        </p>
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Achievements by Year (0 achievements)</CardTitle>
+            </CardHeader>
+            <CardContent className="h-80">
+              <div className="flex items-center justify-center h-full text-gray-500">
+                No achievements found
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Achievements by Status (0 achievements)</CardTitle>
+            </CardHeader>
+            <CardContent className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={emptyData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                    label={({ name }) => `${name} 0%`}
+                  >
+                    {emptyData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Achievements by Branch (0 achievements)</CardTitle>
+          </CardHeader>
+          <CardContent className="h-80">
+            <div className="flex items-center justify-center h-full text-gray-500">
+              No achievements found
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }

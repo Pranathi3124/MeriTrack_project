@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -67,7 +66,7 @@ const Navbar = () => {
           <Logo />
         </Link>
 
-        <div className="hidden md:flex space-x-6">
+        <div className="flex items-center space-x-6 ml-auto">
           <Link 
             to="/"
             className="text-gray-700 hover:text-college-maroon font-medium"
@@ -85,21 +84,20 @@ const Navbar = () => {
               </Link>
               
               {userData?.role === "admin" && (
-                <Link 
-                  to="/admin/reports"
-                  className="text-gray-700 hover:text-college-maroon font-medium"
-                >
-                  Reports
-                </Link>
-              )}
-              
-              {userData?.role === "admin" && (
-                <Link 
-                  to="/admin/audit"
-                  className="text-gray-700 hover:text-college-maroon font-medium"
-                >
-                  Audit Logs
-                </Link>
+                <>
+                  <Link 
+                    to="/admin/reports"
+                    className="text-gray-700 hover:text-college-maroon font-medium"
+                  >
+                    Reports
+                  </Link>
+                  <Link 
+                    to="/admin/audit"
+                    className="text-gray-700 hover:text-college-maroon font-medium"
+                  >
+                    Audit Logs
+                  </Link>
+                </>
               )}
             </>
           ) : (
@@ -118,63 +116,63 @@ const Navbar = () => {
               </Link>
             </>
           )}
-        </div>
 
-        <div className="flex items-center space-x-4">
-          {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="rounded-full w-10 h-10 p-0">
-                  {userData?.photoURL ? (
-                    <img 
-                      src={userData.photoURL} 
-                      alt={userData.name} 
-                      className="rounded-full w-8 h-8 object-cover"
-                    />
-                  ) : (
-                    <UserIcon className="h-5 w-5" />
-                  )}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 z-50">
-                <div className="p-2 text-center">
-                  <p className="font-medium">{userData?.name}</p>
-                  <p className="text-sm text-gray-500">{userData?.email}</p>
-                </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link 
-                    to={getProfileLink()}
-                    className="cursor-pointer flex items-center"
-                  >
-                    <UserIcon className="mr-2 h-4 w-4" />
-                    <span>Profile</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link 
-                    to={getDashboardLink()}
-                    className="cursor-pointer flex items-center"
-                  >
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Dashboard</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <Button 
-              onClick={() => navigate("/login")}
-              className="bg-college-maroon hover:bg-college-darkmaroon"
-            >
-              Sign In
-            </Button>
-          )}
+          <div className="flex items-center space-x-4">
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="rounded-full w-10 h-10 p-0">
+                    {userData?.photoURL ? (
+                      <img 
+                        src={userData.photoURL} 
+                        alt={userData.name} 
+                        className="rounded-full w-8 h-8 object-cover"
+                      />
+                    ) : (
+                      <UserIcon className="h-5 w-5" />
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 z-50">
+                  <div className="p-2 text-center">
+                    <p className="font-medium">{userData?.name}</p>
+                    <p className="text-sm text-gray-500">{userData?.email}</p>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link 
+                      to={getProfileLink()}
+                      className="cursor-pointer flex items-center"
+                    >
+                      <UserIcon className="mr-2 h-4 w-4" />
+                      <span>Profile</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link 
+                      to={getDashboardLink()}
+                      className="cursor-pointer flex items-center"
+                    >
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Dashboard</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button 
+                onClick={() => navigate("/login")}
+                className="bg-college-maroon hover:bg-college-darkmaroon"
+              >
+                Sign In
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </nav>

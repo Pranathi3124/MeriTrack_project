@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getAllAchievements } from "@/lib/firebase";
@@ -39,14 +38,11 @@ const FacultyDashboardPage = () => {
     
     setLoading(true);
     try {
-      // Get all achievements without server-side filtering for more flexible client-side filtering
       const achievementsData = await getAllAchievements();
       setAchievements(achievementsData);
       
-      // Apply filters client-side
       applyFilters(achievementsData);
       
-      // Show notification if there are pending achievements
       const pendingCount = achievementsData.filter(a => a.status === "pending").length;
       if (pendingCount > 0 && activeTab !== "pending") {
         toast.info(`You have ${pendingCount} pending achievement${pendingCount === 1 ? '' : 's'} to review.`, {
@@ -64,37 +60,31 @@ const FacultyDashboardPage = () => {
     }
   };
   
-  // Apply filters client-side for better performance and real-time feedback
   const applyFilters = (data: Achievement[] = achievements) => {
     let filtered = [...data];
     
-    // Filter by branch
     if (filters.branch !== "all") {
       filtered = filtered.filter(a => a.branch === filters.branch);
     }
     
-    // Filter by year
     if (filters.year !== "all") {
       filtered = filtered.filter(a => a.year === filters.year);
     }
     
-    // Filter by category
     if (filters.category !== "all") {
       filtered = filtered.filter(a => a.category === filters.category);
     }
     
-    // Filter by roll number
     if (filters.rollNo && filters.rollNo.trim() !== "") {
       filtered = filtered.filter(a => 
         a.rollNo && a.rollNo.toLowerCase().includes(filters.rollNo.toLowerCase())
       );
     }
     
-    // Filter by date range
     if (filters.startDate && filters.endDate) {
       const start = new Date(filters.startDate);
       const end = new Date(filters.endDate);
-      end.setHours(23, 59, 59);  // Include the entire end day
+      end.setHours(23, 59, 59);
       
       filtered = filtered.filter(a => {
         if (!a.date) return false;
@@ -110,7 +100,7 @@ const FacultyDashboardPage = () => {
       });
     } else if (filters.endDate) {
       const end = new Date(filters.endDate);
-      end.setHours(23, 59, 59);  // Include the entire end day
+      end.setHours(23, 59, 59);
       filtered = filtered.filter(a => {
         if (!a.date) return false;
         const achievementDate = a.date instanceof Date ? a.date : new Date(a.date.seconds * 1000);
@@ -124,7 +114,6 @@ const FacultyDashboardPage = () => {
   useEffect(() => {
     fetchAchievements();
     
-    // Refresh achievements data every 5 minutes
     const intervalId = setInterval(() => {
       fetchAchievements();
     }, 5 * 60 * 1000);
@@ -132,7 +121,6 @@ const FacultyDashboardPage = () => {
     return () => clearInterval(intervalId);
   }, [user]);
   
-  // Apply filters whenever filters state changes
   useEffect(() => {
     applyFilters();
   }, [filters]);
@@ -152,7 +140,6 @@ const FacultyDashboardPage = () => {
     });
   };
   
-  // Create status-filtered arrays for each tab
   const pendingAchievements = filteredAchievements.filter(
     (achievement) => achievement.status === "pending"
   );
@@ -165,7 +152,6 @@ const FacultyDashboardPage = () => {
     (achievement) => achievement.status === "rejected"
   );
   
-  // Toggle filters visibility
   const toggleFilters = () => {
     setShowFilters(!showFilters);
   };
@@ -266,134 +252,145 @@ const FacultyDashboardPage = () => {
             <CardTitle>Filter Achievements</CardTitle>
             <CardDescription>Filter students' achievements by various parameters</CardDescription>
           </CardHeader>
-          <CardContent className="grid md:grid-cols-5 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="rollNo">Roll Number</Label>
-              <Input
-                id="rollNo"
-                value={filters.rollNo}
-                onChange={(e) => handleFilterChange("rollNo", e.target.value)}
-                placeholder="Enter roll number"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="branch">Branch</Label>
-              <Select
-                value={filters.branch}
-                onValueChange={(value) => handleFilterChange("branch", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All branches" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All branches</SelectItem>
-                  <SelectItem value="CSE">Computer Science</SelectItem>
-                  <SelectItem value="IT">Information Technology</SelectItem>
-                  <SelectItem value="ECE">Electronics & Communication</SelectItem>
-                  <SelectItem value="EEE">Electrical & Electronics</SelectItem>
-                  <SelectItem value="MECH">Mechanical</SelectItem>
-                  <SelectItem value="CIVIL">Civil</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="year">Year</Label>
-              <Select
-                value={filters.year}
-                onValueChange={(value) => handleFilterChange("year", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All years" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All years</SelectItem>
-                  <SelectItem value="1">1st Year</SelectItem>
-                  <SelectItem value="2">2nd Year</SelectItem>
-                  <SelectItem value="3">3rd Year</SelectItem>
-                  <SelectItem value="4">4th Year</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
-              <Select
-                value={filters.category}
-                onValueChange={(value) => handleFilterChange("category", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All categories" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All categories</SelectItem>
-                  <SelectItem value="academic">Academic</SelectItem>
-                  <SelectItem value="sports">Sports</SelectItem>
-                  <SelectItem value="internships">Internships</SelectItem>
-                  <SelectItem value="hackathon">Hackathon</SelectItem>
-                  <SelectItem value="workshops">Workshops</SelectItem>
-                  <SelectItem value="co-curricular">Co-curricular Activities</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2 grid grid-cols-2 gap-2">
-              <div>
-                <Label>Start Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !filters.startDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {filters.startDate ? format(filters.startDate, "PP") : "Pick date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={filters.startDate}
-                      onSelect={(date) => handleFilterChange("startDate", date)}
-                      initialFocus
-                      fromDate={new Date(2020, 0, 1)}
-                      toDate={new Date()}
-                    />
-                  </PopoverContent>
-                </Popover>
+          <CardContent>
+            <div className="grid gap-6">
+              <div className="grid md:grid-cols-4 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="rollNo">Roll Number</Label>
+                  <Input
+                    id="rollNo"
+                    value={filters.rollNo}
+                    onChange={(e) => handleFilterChange("rollNo", e.target.value)}
+                    placeholder="Enter roll number"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="branch">Branch</Label>
+                  <Select
+                    value={filters.branch}
+                    onValueChange={(value) => handleFilterChange("branch", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="All branches" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All branches</SelectItem>
+                      <SelectItem value="CSE">Computer Science</SelectItem>
+                      <SelectItem value="IT">Information Technology</SelectItem>
+                      <SelectItem value="ECE">Electronics & Communication</SelectItem>
+                      <SelectItem value="EEE">Electrical & Electronics</SelectItem>
+                      <SelectItem value="MECH">Mechanical</SelectItem>
+                      <SelectItem value="CIVIL">Civil</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="year">Year</Label>
+                  <Select
+                    value={filters.year}
+                    onValueChange={(value) => handleFilterChange("year", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="All years" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All years</SelectItem>
+                      <SelectItem value="1">1st Year</SelectItem>
+                      <SelectItem value="2">2nd Year</SelectItem>
+                      <SelectItem value="3">3rd Year</SelectItem>
+                      <SelectItem value="4">4th Year</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="category">Category</Label>
+                  <Select
+                    value={filters.category}
+                    onValueChange={(value) => handleFilterChange("category", value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="All categories" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All categories</SelectItem>
+                      <SelectItem value="academic">Academic</SelectItem>
+                      <SelectItem value="sports">Sports</SelectItem>
+                      <SelectItem value="internships">Internships</SelectItem>
+                      <SelectItem value="hackathon">Hackathon</SelectItem>
+                      <SelectItem value="workshops">Workshops</SelectItem>
+                      <SelectItem value="co-curricular">Co-curricular Activities</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               
-              <div>
-                <Label>End Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !filters.endDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {filters.endDate ? format(filters.endDate, "PP") : "Pick date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={filters.endDate}
-                      onSelect={(date) => handleFilterChange("endDate", date)}
-                      initialFocus
-                      fromDate={filters.startDate || new Date(2020, 0, 1)}
-                      toDate={new Date()}
-                    />
-                  </PopoverContent>
-                </Popover>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Start Date</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !filters.startDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {filters.startDate ? format(filters.startDate, "PP") : "Pick date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={filters.startDate}
+                        onSelect={(date) => handleFilterChange("startDate", date)}
+                        initialFocus
+                        fromDate={new Date(2020, 0, 1)}
+                        toDate={new Date()}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label>End Date</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !filters.endDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {filters.endDate ? format(filters.endDate, "PP") : "Pick date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={filters.endDate}
+                        onSelect={(date) => handleFilterChange("endDate", date)}
+                        initialFocus
+                        fromDate={filters.startDate || new Date(2020, 0, 1)}
+                        toDate={new Date()}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
+
+              <Button 
+                onClick={() => applyFilters()}
+                className="w-full md:w-auto"
+              >
+                Apply Filters
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -418,7 +415,6 @@ const FacultyDashboardPage = () => {
           </TabsTrigger>
         </TabsList>
 
-        {/* Pending Tab */}
         <TabsContent value="pending" className="space-y-4">
           {loading ? (
             <div className="text-center p-8">
@@ -448,7 +444,6 @@ const FacultyDashboardPage = () => {
           )}
         </TabsContent>
             
-        {/* Approved Tab */}
         <TabsContent value="approved" className="space-y-4">
           {loading ? (
             <div className="text-center p-8">
@@ -478,7 +473,6 @@ const FacultyDashboardPage = () => {
           )}
         </TabsContent>
             
-        {/* Rejected Tab */}
         <TabsContent value="rejected" className="space-y-4">
           {loading ? (
             <div className="text-center p-8">
@@ -508,7 +502,6 @@ const FacultyDashboardPage = () => {
           )}
         </TabsContent>
             
-        {/* Statistics Tab */}
         <TabsContent value="statistics" className="space-y-4">
           {loading ? (
             <div className="text-center p-8">
