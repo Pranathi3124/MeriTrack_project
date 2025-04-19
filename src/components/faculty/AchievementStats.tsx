@@ -1,10 +1,27 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
+type Achievement = {
+  id: string;
+  title: string;
+  category: string;
+  description: string;
+  date: Date | any;
+  documentURL?: string;
+  documentName?: string;
+  status: "pending" | "approved" | "rejected";
+  createdAt: any;
+  studentName: string;
+  studentEmail: string;
+  rollNo: string;
+  branch: string;
+  year: string;
+  userId: string;
+};
+
 type AchievementStatProps = {
-  achievements: any[];
+  achievements: Achievement[];
 };
 
 const AchievementStats: React.FC<AchievementStatProps> = ({ achievements }) => {

@@ -17,9 +17,28 @@ import { Calendar } from "@/components/ui/calendar";
 import { format, addDays } from "date-fns";
 import { cn } from "@/lib/utils";
 
+// Define the Achievement type to fix the error
+type Achievement = {
+  id: string;
+  title: string;
+  category: string;
+  description: string;
+  date: Date;
+  documentURL?: string;
+  documentName?: string;
+  status: "pending" | "approved" | "rejected";
+  createdAt: any;
+  studentName: string;
+  studentEmail: string;
+  rollNo: string;
+  branch: string;
+  year: string;
+  userId: string;
+};
+
 const FacultyDashboardPage = () => {
   const { user } = useAuth();
-  const [achievements, setAchievements] = useState<any[]>([]);
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     branch: "all",
