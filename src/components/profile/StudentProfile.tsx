@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,8 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { updateUserProfile, uploadProfilePicture, changePassword } from "@/lib/firebase";
+import { updateUserProfile, uploadProfilePicture, changePassword, getUserAchievements } from "@/lib/firebase";
 import { Camera, Save } from "lucide-react";
+import StudentStats from "./StudentStats";
 
 interface StudentProfileProps {
   userData: any;
@@ -32,7 +32,8 @@ const StudentProfile: React.FC<StudentProfileProps> = ({ userData }) => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+  const [achievements, setAchievements] = useState([]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -47,13 +48,11 @@ const StudentProfile: React.FC<StudentProfileProps> = ({ userData }) => {
     
     const file = e.target.files[0];
     
-    // Validate file type
     if (!file.type.includes('image')) {
       toast.error("Please upload an image file");
       return;
     }
     
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast.error("File size should be less than 5MB");
       return;
@@ -123,7 +122,6 @@ const StudentProfile: React.FC<StudentProfileProps> = ({ userData }) => {
     }
   };
   
-  // Reset form when userData changes
   useEffect(() => {
     if (userData) {
       setFormData({
@@ -138,205 +136,224 @@ const StudentProfile: React.FC<StudentProfileProps> = ({ userData }) => {
     }
   }, [userData]);
   
+  useEffect(() => {
+    const fetchAchievements = async () => {
+      if (user) {
+        try {
+          const userAchievements = await getUserAchievements(user.uid);
+          setAchievements(userAchievements);
+        } catch (error) {
+          console.error("Error fetching achievements:", error);
+          toast.error("Failed to load achievements");
+        }
+      }
+    };
+    
+    fetchAchievements();
+  }, [user]);
+  
   return (
-    <div className="grid md:grid-cols-2 gap-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Personal Information</CardTitle>
-          <CardDescription>Update your personal details</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="flex flex-col items-center mb-6">
-              <div className="relative">
-                <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-gray-200">
-                  {formData.photoURL ? (
-                    <img 
-                      src={formData.photoURL} 
-                      alt={formData.name} 
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                      <span className="text-gray-500 text-3xl font-semibold">
-                        {formData.name.charAt(0)}
-                      </span>
-                    </div>
-                  )}
+    <div className="space-y-6">
+      <div className="grid md:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Personal Information</CardTitle>
+            <CardDescription>Update your personal details</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="flex flex-col items-center mb-6">
+                <div className="relative">
+                  <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-gray-200">
+                    {formData.photoURL ? (
+                      <img 
+                        src={formData.photoURL} 
+                        alt={formData.name} 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                        <span className="text-gray-500 text-3xl font-semibold">
+                          {formData.name.charAt(0)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <Button 
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    className="absolute bottom-0 right-0 rounded-full p-2"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                  >
+                    <Camera className="h-4 w-4" />
+                  </Button>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    onChange={handleProfilePictureChange}
+                    accept="image/*"
+                  />
                 </div>
-                <Button 
-                  type="button"
-                  size="sm"
-                  variant="secondary"
-                  className="absolute bottom-0 right-0 rounded-full p-2"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                >
-                  <Camera className="h-4 w-4" />
-                </Button>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  className="hidden"
-                  onChange={handleProfilePictureChange}
-                  accept="image/*"
+                {isUploading && (
+                  <p className="text-sm text-gray-500 mt-2">Uploading...</p>
+                )}
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
                 />
               </div>
-              {isUploading && (
-                <p className="text-sm text-gray-500 mt-2">Uploading...</p>
-              )}
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                name="email"
-                value={formData.email}
-                disabled
-              />
-              <p className="text-xs text-gray-500">Email cannot be changed</p>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="mobileNo">Mobile Number</Label>
-              <Input
-                id="mobileNo"
-                name="mobileNo"
-                value={formData.mobileNo}
-                onChange={handleChange}
-                placeholder="Enter your mobile number"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="branch">Branch</Label>
-              <Select
-                value={formData.branch}
-                onValueChange={(value) => handleSelectChange("branch", value)}
+              
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  disabled
+                />
+                <p className="text-xs text-gray-500">Email cannot be changed</p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="mobileNo">Mobile Number</Label>
+                <Input
+                  id="mobileNo"
+                  name="mobileNo"
+                  value={formData.mobileNo}
+                  onChange={handleChange}
+                  placeholder="Enter your mobile number"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="branch">Branch</Label>
+                <Select
+                  value={formData.branch}
+                  onValueChange={(value) => handleSelectChange("branch", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select branch" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="CSE">Computer Science</SelectItem>
+                    <SelectItem value="IT">Information Technology</SelectItem>
+                    <SelectItem value="ECE">Electronics & Communication</SelectItem>
+                    <SelectItem value="EEE">Electrical & Electronics</SelectItem>
+                    <SelectItem value="MECH">Mechanical</SelectItem>
+                    <SelectItem value="CIVIL">Civil</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="year">Year</Label>
+                <Select
+                  value={formData.year}
+                  onValueChange={(value) => handleSelectChange("year", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select year" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1st Year</SelectItem>
+                    <SelectItem value="2">2nd Year</SelectItem>
+                    <SelectItem value="3">3rd Year</SelectItem>
+                    <SelectItem value="4">4th Year</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="rollNo">Roll Number</Label>
+                <Input
+                  id="rollNo"
+                  name="rollNo"
+                  value={formData.rollNo}
+                  onChange={handleChange}
+                  placeholder="Enter your roll number"
+                />
+              </div>
+              
+              <Button
+                type="submit"
+                className="w-full bg-college-maroon hover:bg-college-darkmaroon"
+                disabled={isUpdating}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select branch" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="CSE">Computer Science</SelectItem>
-                  <SelectItem value="IT">Information Technology</SelectItem>
-                  <SelectItem value="ECE">Electronics & Communication</SelectItem>
-                  <SelectItem value="EEE">Electrical & Electronics</SelectItem>
-                  <SelectItem value="MECH">Mechanical</SelectItem>
-                  <SelectItem value="CIVIL">Civil</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="year">Year</Label>
-              <Select
-                value={formData.year}
-                onValueChange={(value) => handleSelectChange("year", value)}
+                {isUpdating ? "Updating..." : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Save Changes
+                  </>
+                )}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Change Password</CardTitle>
+            <CardDescription>Update your password</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handlePasswordChange} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="currentPassword">Current Password</Label>
+                <Input
+                  id="currentPassword"
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="newPassword">New Password</Label>
+                <Input
+                  id="newPassword"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+              </div>
+              
+              <Button
+                type="submit"
+                className="w-full bg-college-maroon hover:bg-college-darkmaroon"
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select year" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">1st Year</SelectItem>
-                  <SelectItem value="2">2nd Year</SelectItem>
-                  <SelectItem value="3">3rd Year</SelectItem>
-                  <SelectItem value="4">4th Year</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="rollNo">Roll Number</Label>
-              <Input
-                id="rollNo"
-                name="rollNo"
-                value={formData.rollNo}
-                onChange={handleChange}
-                placeholder="Enter your roll number"
-              />
-            </div>
-            
-            <Button
-              type="submit"
-              className="w-full bg-college-maroon hover:bg-college-darkmaroon"
-              disabled={isUpdating}
-            >
-              {isUpdating ? "Updating..." : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  Save Changes
-                </>
-              )}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>Change Password</CardTitle>
-          <CardDescription>Update your password</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handlePasswordChange} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="currentPassword">Current Password</Label>
-              <Input
-                id="currentPassword"
-                type="password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                required
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="newPassword">New Password</Label>
-              <Input
-                id="newPassword"
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                required
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm New Password</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-              />
-            </div>
-            
-            <Button
-              type="submit"
-              className="w-full bg-college-maroon hover:bg-college-darkmaroon"
-            >
-              Change Password
-            </Button>
-          </form>
-        </CardContent>
-        <CardFooter className="text-sm text-gray-500">
-          Make sure to remember your new password!
-        </CardFooter>
-      </Card>
+                Change Password
+              </Button>
+            </form>
+          </CardContent>
+          <CardFooter className="text-sm text-gray-500">
+            Make sure to remember your new password!
+          </CardFooter>
+        </Card>
+      </div>
+      <StudentStats achievements={achievements} />
     </div>
   );
 };

@@ -1,7 +1,7 @@
 
 import React from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import Navbar from "./Navbar";
 
 interface AppLayoutProps {
@@ -10,6 +10,7 @@ interface AppLayoutProps {
 
 const AppLayout: React.FC<AppLayoutProps> = ({ requiredRole }) => {
   const { loading, user, userData } = useAuth();
+  const location = useLocation();
 
   // Show loading state
   if (loading) {
@@ -23,9 +24,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ requiredRole }) => {
     );
   }
 
-  // If user is not authenticated, redirect to login
+  // If user is not authenticated, redirect to login with return URL
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to={`/login?returnTo=${encodeURIComponent(location.pathname)}`} replace />;
   }
 
   // If role is required but user doesn't have the role, redirect based on their actual role

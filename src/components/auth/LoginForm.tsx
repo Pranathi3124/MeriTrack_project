@@ -1,6 +1,5 @@
-
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -13,6 +12,8 @@ import Logo from "@/components/Logo";
 
 const LoginForm = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returnTo = searchParams.get("returnTo") || "/";
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,7 +24,6 @@ const LoginForm = () => {
     setIsLoading(true);
 
     try {
-      // First validate email format based on role
       if (!validateEmail(email, role)) {
         throw new Error(`Invalid email format for ${role} role`);
       }
@@ -35,13 +35,18 @@ const LoginForm = () => {
       
       toast.success("Successfully logged in!");
       
-      // Redirect based on role
-      if (email.includes("admin@")) {
-        navigate("/admin/dashboard");
-      } else if (email.includes("faculty@")) {
-        navigate("/faculty/dashboard");
+      // Use returnTo parameter for redirection
+      if (returnTo.startsWith("/")) {
+        navigate(returnTo);
       } else {
-        navigate("/student/dashboard");
+        // Fallback to role-based redirect
+        if (email.includes("admin@")) {
+          navigate("/admin/dashboard");
+        } else if (email.includes("faculty@")) {
+          navigate("/faculty/dashboard");
+        } else {
+          navigate("/student/dashboard");
+        }
       }
     } catch (error: any) {
       console.error(error);

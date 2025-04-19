@@ -24,11 +24,11 @@ export type UserRole = "student" | "faculty" | "admin";
 // Validate email format based on role
 export const validateEmail = (email: string, role: UserRole): boolean => {
   if (role === "student") {
-    // Student email format: numbers followed by @vnrvjiet.in
-    return /^\d{8,}@vnrvjiet\.in$/.test(email);
+    // Student email format: 8 digits followed by @vnrvjiet.in
+    return /^\d{8}@vnrvjiet\.in$/.test(email);
   } else if (role === "faculty") {
-    // Faculty email format: faculty@vnrvjiet.in
-    return /^faculty@vnrvjiet\.in$/.test(email);
+    // Faculty email format: facultyid@gmail.com (8 digits)
+    return /^faculty\d{8}@gmail\.com$/.test(email);
   } else if (role === "admin") {
     // Admin email format: admin@vnrvjiet.in
     return /^admin@vnrvjiet\.in$/.test(email);
