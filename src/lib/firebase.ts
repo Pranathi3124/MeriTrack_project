@@ -1,4 +1,3 @@
-
 import { initializeApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, updatePassword, User } from "firebase/auth";
 import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, query, where, getDocs, addDoc, deleteDoc, Timestamp, serverTimestamp } from "firebase/firestore";
@@ -140,6 +139,25 @@ export type AchievementCategory =
   | "workshops" 
   | "co-curricular";
 
+// Define Achievement type for export
+export type Achievement = {
+  id: string;
+  title: string;
+  category: string;
+  description: string;
+  date: Date | any;
+  documentURL?: string;
+  documentName?: string;
+  status: "pending" | "approved" | "rejected";
+  createdAt: any;
+  studentName: string;
+  studentEmail: string;
+  rollNo: string;
+  branch: string;
+  year: string;
+  userId: string;
+};
+
 // Achievement management
 export const addAchievement = async (userId: string, achievementData: any) => {
   try {
@@ -187,18 +205,18 @@ export const getUserAchievements = async (userId: string) => {
 };
 
 // Faculty functions
-export const getAllAchievements = async (filters: any = {}) => {
+export const getAllAchievements = async (filters: any = {}): Promise<Achievement[]> => {
   try {
     let q = query(collection(db, "achievements"));
     
     // Apply filters if provided
-    if (filters.branch) {
+    if (filters.branch && filters.branch !== "all") {
       q = query(q, where("branch", "==", filters.branch));
     }
-    if (filters.year) {
+    if (filters.year && filters.year !== "all") {
       q = query(q, where("year", "==", filters.year));
     }
-    if (filters.category) {
+    if (filters.category && filters.category !== "all") {
       q = query(q, where("category", "==", filters.category));
     }
     if (filters.rollNo) {
@@ -215,7 +233,7 @@ export const getAllAchievements = async (filters: any = {}) => {
     return querySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
-    }));
+    })) as Achievement[];
   } catch (error) {
     console.error("Error getting all achievements:", error);
     throw error;

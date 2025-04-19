@@ -23,7 +23,7 @@ type Achievement = {
   title: string;
   category: string;
   description: string;
-  date: Date;
+  date: Date | any;
   documentURL?: string;
   documentName?: string;
   status: "pending" | "approved" | "rejected";
@@ -56,7 +56,8 @@ const FacultyDashboardPage = () => {
     setLoading(true);
     try {
       const achievementsData = await getAllAchievements(filters);
-      setAchievements(achievementsData);
+      // Explicitly cast the returned data to the Achievement type
+      setAchievements(achievementsData as Achievement[]);
       
       // Show notification if there are pending achievements
       const pendingCount = achievementsData.filter(a => a.status === "pending").length;
