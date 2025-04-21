@@ -26,8 +26,8 @@ import { Link } from "react-router-dom";
 const studentSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email format").refine(
-    (email) => /^\d{8,}@vnrvjiet\.in$/.test(email),
-    "Student email must be in format: 8 digits@vnrvjiet.in"
+    (email) => /^\d{8}@gmail\.com$/.test(email),
+    "Student email must be in format: 24075a0501@gmail.com"
   ),
   password: z.string().min(8, "Password must be at least 8 characters"),
   confirmPassword: z.string(),
@@ -43,8 +43,8 @@ const studentSchema = z.object({
 const facultySchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email format").refine(
-    (email) => /^faculty@vnrvjiet\.in$/.test(email),
-    "Faculty email must be: faculty@vnrvjiet.in"
+    (email) => /^[a-zA-Z]+@vnrvjiet\.in$/.test(email),
+    "Faculty email must be in format: facultyname@vnrvjiet.in"
   ),
   password: z.string().min(8, "Password must be at least 8 characters"),
   confirmPassword: z.string(),
@@ -223,7 +223,7 @@ const SignupForm = () => {
                         <FormItem>
                           <FormLabel>College Email</FormLabel>
                           <FormControl>
-                            <Input placeholder="24075a0501@vnrvjiet.in" {...field} />
+                            <Input placeholder="24075a0501@gmail.com" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
