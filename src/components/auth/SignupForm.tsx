@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,7 +28,7 @@ const studentSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email format").refine(
     (email) => /^\d{4}[a-zA-Z]\d{4}@vnrvjiet\.in$/.test(email),
-    "Student email must be in format: 24075a0501@vnrvjiet.in"
+    "Student email must match pattern like: 24075a0501@vnrvjiet.in or 24076b0560@vnrvjiet.in"
   ),
   password: z.string().min(8, "Password must be at least 8 characters"),
   confirmPassword: z.string(),
@@ -132,6 +133,13 @@ const SignupForm = () => {
   const onSubmitStudent = async (values: z.infer<typeof studentSchema>) => {
     setIsLoading(true);
     try {
+      console.log("Validating student email:", values.email);
+      if (!validateEmail(values.email, "student")) {
+        toast.error("Invalid student email format. Must be like: 24075a0501@vnrvjiet.in");
+        setIsLoading(false);
+        return;
+      }
+
       const { confirmPassword, ...userData } = values;
 
       await signUp(values.email, values.password, "student", userData);

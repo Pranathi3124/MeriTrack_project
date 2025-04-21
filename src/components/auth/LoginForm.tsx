@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,8 +25,9 @@ const LoginForm = () => {
     setIsLoading(true);
 
     try {
+      console.log(`Validating login email: ${email} for role: ${role}`);
       const isValid = validateEmail(email, role);
-      console.log(`Validating email: ${email} for role: ${role}, valid: ${isValid}`);
+      console.log(`Validation result: ${isValid}`);
       
       if (!isValid) {
         throw new Error(`Invalid email format for ${role} role`);
