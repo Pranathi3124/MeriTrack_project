@@ -42,7 +42,7 @@ const LoginForm = () => {
         // Fallback to role-based redirect
         if (email.includes("admin@")) {
           navigate("/admin/dashboard");
-        } else if (email.includes("faculty@")) {
+        } else if (email.includes("@vnrvjiet.in") && !email.match(/^\d{4}[a-zA-Z]\d{4}@vnrvjiet\.in$/)) {
           navigate("/faculty/dashboard");
         } else {
           navigate("/student/dashboard");
