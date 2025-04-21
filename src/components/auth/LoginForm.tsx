@@ -34,6 +34,7 @@ const LoginForm = () => {
       }
 
       const user = await signIn(email, password);
+      console.log("Login successful, user:", user);
       
       await addAuditLog("login", user.uid, { role, email });
       
@@ -42,16 +43,16 @@ const LoginForm = () => {
       if (returnTo.startsWith("/")) {
         navigate(returnTo);
       } else {
-        if (email === "admin@vnrvjiet.in") {
+        if (role === "admin") {
           navigate("/admin/dashboard");
-        } else if (!email.match(/^\d{4}[a-zA-Z]\d{4}@vnrvjiet\.in$/)) {
+        } else if (role === "faculty") {
           navigate("/faculty/dashboard");
         } else {
           navigate("/student/dashboard");
         }
       }
     } catch (error: any) {
-      console.error(error);
+      console.error("Login error:", error);
       toast.error(error.message || "Failed to login");
     } finally {
       setIsLoading(false);

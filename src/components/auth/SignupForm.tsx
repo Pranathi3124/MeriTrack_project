@@ -25,7 +25,10 @@ import { Link } from "react-router-dom";
 
 const studentSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Invalid email format"),
+  email: z.string().email("Invalid email format").refine(
+    (email) => /^\d{4,5}[a-zA-Z]\d{4}@vnrvjiet\.in$/.test(email),
+    "Student email must be in format: 24075a0501@vnrvjiet.in"
+  ),
   password: z.string().min(8, "Password must be at least 8 characters"),
   confirmPassword: z.string(),
   rollNo: z.string().min(1, "Roll number is required"),
@@ -130,7 +133,10 @@ const SignupForm = () => {
     setIsLoading(true);
     try {
       console.log("Validating student email:", values.email);
-      if (!validateEmail(values.email, "student")) {
+      const isEmailValid = validateEmail(values.email, "student");
+      console.log("Email validation result:", isEmailValid);
+      
+      if (!isEmailValid) {
         console.error("Email validation failed");
         toast.error("Invalid student email format. Must follow pattern like: 24075a0501@vnrvjiet.in");
         setIsLoading(false);
@@ -140,11 +146,21 @@ const SignupForm = () => {
       console.log("Email validation passed, proceeding with signup");
       const { confirmPassword, ...userData } = values;
 
-      await signUp(values.email, values.password, "student", userData);
-      toast.success("Account created successfully!");
-      navigate("/login");
+      try {
+        const user = await signUp(values.email, values.password, "student", userData);
+        console.log("User created successfully:", user);
+        toast.success("Account created successfully!");
+        navigate("/login");
+      } catch (signupError: any) {
+        console.error("Signup error from Firebase:", signupError);
+        if (signupError.code === "auth/email-already-in-use") {
+          toast.error("Email is already in use. Please use a different email or login instead.");
+        } else {
+          toast.error(signupError.message || "Failed to create account");
+        }
+      }
     } catch (error: any) {
-      console.error("Signup error:", error);
+      console.error("Signup general error:", error);
       toast.error(error.message || "Failed to create account");
     } finally {
       setIsLoading(false);

@@ -1,3 +1,4 @@
+
 import { initializeApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, updatePassword, User } from "firebase/auth";
 import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, query, where, getDocs, addDoc, deleteDoc, Timestamp, serverTimestamp } from "firebase/firestore";
@@ -21,13 +22,14 @@ export const storage = getStorage(app);
 // User roles
 export type UserRole = "student" | "faculty" | "admin";
 
-// Validate email format based on role - Fixed regex patterns and debugging
+// Validate email format based on role
 export const validateEmail = (email: string, role: UserRole): boolean => {
   console.log(`Validating ${role} email: ${email}`);
   
   if (role === "student") {
-    // Four digits, followed by a letter, followed by four digits, followed by @vnrvjiet.in
-    const studentPattern = /^\d{4}[a-zA-Z]\d{4}@vnrvjiet\.in$/;
+    // Pattern: 5 digits, followed by a letter, followed by 4 digits, followed by @vnrvjiet.in
+    // Or: 4 digits, followed by a letter, followed by 4 digits, followed by @vnrvjiet.in
+    const studentPattern = /^\d{4,5}[a-zA-Z]\d{4}@vnrvjiet\.in$/;
     const isValid = studentPattern.test(email);
     console.log(`Student email validation result: ${isValid} with pattern ${studentPattern}`);
     return isValid;
