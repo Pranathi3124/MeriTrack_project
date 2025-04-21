@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,10 +25,7 @@ import { Link } from "react-router-dom";
 
 const studentSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Invalid email format").refine(
-    (email) => /^\d{4}[a-zA-Z]\d{4}@vnrvjiet\.in$/.test(email),
-    "Student email must match pattern like: 24075a0501@vnrvjiet.in or 24076b0560@vnrvjiet.in"
-  ),
+  email: z.string().email("Invalid email format"),
   password: z.string().min(8, "Password must be at least 8 characters"),
   confirmPassword: z.string(),
   rollNo: z.string().min(1, "Roll number is required"),
@@ -135,18 +131,20 @@ const SignupForm = () => {
     try {
       console.log("Validating student email:", values.email);
       if (!validateEmail(values.email, "student")) {
-        toast.error("Invalid student email format. Must be like: 24075a0501@vnrvjiet.in");
+        console.error("Email validation failed");
+        toast.error("Invalid student email format. Must follow pattern like: 24075a0501@vnrvjiet.in");
         setIsLoading(false);
         return;
       }
 
+      console.log("Email validation passed, proceeding with signup");
       const { confirmPassword, ...userData } = values;
 
       await signUp(values.email, values.password, "student", userData);
       toast.success("Account created successfully!");
       navigate("/login");
     } catch (error: any) {
-      console.error(error);
+      console.error("Signup error:", error);
       toast.error(error.message || "Failed to create account");
     } finally {
       setIsLoading(false);

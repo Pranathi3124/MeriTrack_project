@@ -21,25 +21,27 @@ export const storage = getStorage(app);
 // User roles
 export type UserRole = "student" | "faculty" | "admin";
 
-// Validate email format based on role
+// Validate email format based on role - Fixed regex patterns and debugging
 export const validateEmail = (email: string, role: UserRole): boolean => {
   console.log(`Validating ${role} email: ${email}`);
   
   if (role === "student") {
-    // Student email format: 24075a0501@vnrvjiet.in or 24076b0560@vnrvjiet.in
     // Four digits, followed by a letter, followed by four digits, followed by @vnrvjiet.in
-    const isValid = /^\d{4}[a-zA-Z]\d{4}@vnrvjiet\.in$/.test(email);
-    console.log(`Student email validation result: ${isValid}`);
+    const studentPattern = /^\d{4}[a-zA-Z]\d{4}@vnrvjiet\.in$/;
+    const isValid = studentPattern.test(email);
+    console.log(`Student email validation result: ${isValid} with pattern ${studentPattern}`);
     return isValid;
   } else if (role === "faculty") {
     // Faculty email format: facultyname@vnrvjiet.in (e.g., varshini@vnrvjiet.in)
-    const isValid = /^[a-zA-Z]+@vnrvjiet\.in$/.test(email);
-    console.log(`Faculty email validation result: ${isValid}`);
+    const facultyPattern = /^[a-zA-Z]+@vnrvjiet\.in$/;
+    const isValid = facultyPattern.test(email);
+    console.log(`Faculty email validation result: ${isValid} with pattern ${facultyPattern}`);
     return isValid;
   } else if (role === "admin") {
     // Admin email format: admin@vnrvjiet.in
-    const isValid = /^admin@vnrvjiet\.in$/.test(email);
-    console.log(`Admin email validation result: ${isValid}`);
+    const adminPattern = /^admin@vnrvjiet\.in$/;
+    const isValid = adminPattern.test(email);
+    console.log(`Admin email validation result: ${isValid} with pattern ${adminPattern}`);
     return isValid;
   }
   return false;
@@ -48,29 +50,39 @@ export const validateEmail = (email: string, role: UserRole): boolean => {
 // User authentication
 export const signUp = async (email: string, password: string, role: UserRole, userData: any) => {
   try {
+    console.log(`Starting signup process for ${role} with email: ${email}`);
+    
+    // Validate email format again as a safeguard
     if (!validateEmail(email, role)) {
+      console.error(`Invalid email format for ${role} role: ${email}`);
       throw new Error(`Invalid email format for ${role} role`);
     }
     
+    console.log("Email format validated, creating user with Firebase Auth");
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
+    console.log("User created in Firebase Auth:", user.uid);
     
     // Create user profile in Firestore
+    console.log("Creating user profile in Firestore with data:", { ...userData, email, role });
     await setDoc(doc(db, "users", user.uid), {
       ...userData,
       email,
       role,
       createdAt: serverTimestamp(),
     });
+    console.log("User profile created in Firestore");
     
     // Update display name
+    console.log("Updating display name to:", userData.name);
     await updateProfile(user, {
       displayName: userData.name,
     });
+    console.log("Display name updated");
     
     return user;
   } catch (error) {
-    console.error("Error signing up:", error);
+    console.error("Error in signUp function:", error);
     throw error;
   }
 };
