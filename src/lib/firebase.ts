@@ -24,7 +24,8 @@ export type UserRole = "student" | "faculty" | "admin";
 // Validate email format based on role
 export const validateEmail = (email: string, role: UserRole): boolean => {
   if (role === "student") {
-    // Student email format: 24075a0501@vnrvjiet.in to 2405a0560@vnrvjiet.in
+    // Student email format: 24075a0501@vnrvjiet.in or 24076b0560@vnrvjiet.in
+    // Four digits, followed by a letter, followed by four digits, followed by @vnrvjiet.in
     return /^\d{4}[a-zA-Z]\d{4}@vnrvjiet\.in$/.test(email);
   } else if (role === "faculty") {
     // Faculty email format: facultyname@vnrvjiet.in (e.g., varshini@vnrvjiet.in)

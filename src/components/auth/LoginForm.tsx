@@ -24,25 +24,25 @@ const LoginForm = () => {
     setIsLoading(true);
 
     try {
-      if (!validateEmail(email, role)) {
+      const isValid = validateEmail(email, role);
+      console.log(`Validating email: ${email} for role: ${role}, valid: ${isValid}`);
+      
+      if (!isValid) {
         throw new Error(`Invalid email format for ${role} role`);
       }
 
       const user = await signIn(email, password);
       
-      // Add audit log
       await addAuditLog("login", user.uid, { role, email });
       
       toast.success("Successfully logged in!");
       
-      // Use returnTo parameter for redirection
       if (returnTo.startsWith("/")) {
         navigate(returnTo);
       } else {
-        // Fallback to role-based redirect
-        if (email.includes("admin@")) {
+        if (email === "admin@vnrvjiet.in") {
           navigate("/admin/dashboard");
-        } else if (email.includes("@vnrvjiet.in") && !email.match(/^\d{4}[a-zA-Z]\d{4}@vnrvjiet\.in$/)) {
+        } else if (!email.match(/^\d{4}[a-zA-Z]\d{4}@vnrvjiet\.in$/)) {
           navigate("/faculty/dashboard");
         } else {
           navigate("/student/dashboard");
