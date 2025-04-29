@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -61,11 +62,28 @@ const Navbar = () => {
 
   return (
     <nav className="border-b bg-white py-4">
-      <div className="container mx-auto flex justify-between items-center">
-        <Link to="/">
-          <Logo />
-        </Link>
-
+      <div className="container mx-auto flex items-center">
+        {/* Logo and College Name Section */}
+        <div className="flex items-center flex-shrink-0 mr-4">
+          <Link to="/" className="flex items-center">
+            <Logo />
+            <div className="hidden md:block ml-2 text-xs text-gray-600 max-w-[180px] leading-tight">
+              <span className="font-semibold">Vallurupalli Nageswara Rao Vignana Jyothi Institute of Engineering &Technology</span>
+            </div>
+          </Link>
+        </div>
+        
+        {/* Central MeriTrack Navigation Brand */}
+        <div className="flex-1 flex justify-center">
+          <div className="relative">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-college-maroon via-college-darkmaroon to-college-maroon bg-clip-text text-transparent">
+              MeriTrack
+            </h1>
+            <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-college-maroon to-transparent"></div>
+          </div>
+        </div>
+        
+        {/* Navigation Links */}
         <div className="flex items-center gap-6">
           {user ? (
             <>
