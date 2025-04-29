@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -72,15 +71,6 @@ const LandingPage = () => {
                 >
                   <Link to="/signup" className="flex items-center gap-2">
                     Get Started <ArrowRight size={18} />
-                  </Link>
-                </Button>
-                <Button 
-                  variant="outline" 
-                  asChild
-                  className="border-white/30 bg-white/10 text-white hover:bg-white/20 hover:border-white/40 px-6 py-6 text-base rounded-xl backdrop-blur-sm transition-all duration-300 hover:scale-105"
-                >
-                  <Link to="/about" className="flex items-center gap-2">
-                    Learn More <ChevronRight size={18} />
                   </Link>
                 </Button>
               </div>
@@ -326,14 +316,6 @@ const LandingPage = () => {
                 <Link to="/signup" className="flex items-center gap-2">
                   Create Free Account <ArrowRight size={20} />
                 </Link>
-              </Button>
-              <Button 
-                asChild
-                variant="outline" 
-                size="lg"
-                className="border-white text-white hover:bg-white/20 px-8 py-6 text-lg rounded-xl"
-              >
-                <Link to="/login">Log In</Link>
               </Button>
             </div>
           </div>
