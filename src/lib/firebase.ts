@@ -1,4 +1,3 @@
-
 import { initializeApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, updatePassword, User } from "firebase/auth";
 import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, query, where, getDocs, addDoc, deleteDoc, Timestamp, serverTimestamp } from "firebase/firestore";
@@ -27,9 +26,8 @@ export const validateEmail = (email: string, role: UserRole): boolean => {
   console.log(`Validating ${role} email: ${email}`);
   
   if (role === "student") {
-    // Pattern: 5 digits, followed by a letter, followed by 4 digits, followed by @vnrvjiet.in
-    // Or: 4 digits, followed by a letter, followed by 4 digits, followed by @vnrvjiet.in
-    const studentPattern = /^\d{4,5}[a-zA-Z]\d{4}@vnrvjiet\.in$/;
+    // Updated pattern: 10 characters with 6th character as 'A', all others are digits, followed by @vnrvjiet.in
+    const studentPattern = /^\d{5}A\d{4}@vnrvjiet\.in$/;
     const isValid = studentPattern.test(email);
     console.log(`Student email validation result: ${isValid} with pattern ${studentPattern}`);
     return isValid;

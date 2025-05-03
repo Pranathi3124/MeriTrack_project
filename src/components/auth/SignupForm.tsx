@@ -26,8 +26,8 @@ import { Link } from "react-router-dom";
 const studentSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email format").refine(
-    (email) => /^\d{4,5}[a-zA-Z]\d{4}@vnrvjiet\.in$/.test(email),
-    "Student email must be in format: 24075a0501@vnrvjiet.in"
+    (email) => /^\d{5}A\d{4}@vnrvjiet\.in$/.test(email),
+    "Student email must be in format: 12345A6789@vnrvjiet.in"
   ),
   password: z.string().min(8, "Password must be at least 8 characters"),
   confirmPassword: z.string(),
@@ -138,7 +138,7 @@ const SignupForm = () => {
       
       if (!isEmailValid) {
         console.error("Email validation failed");
-        toast.error("Invalid student email format. Must follow pattern like: 24075a0501@vnrvjiet.in");
+        toast.error("Invalid student email format. Must follow pattern like: 12345A6789@vnrvjiet.in");
         setIsLoading(false);
         return;
       }
@@ -201,25 +201,25 @@ const SignupForm = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white px-4 py-12">
-      <Card className="w-full max-w-xl border-t-4 border-t-college-maroon shadow-lg">
+      <Card className="w-full max-w-xl border-t-4 border-t-college-maroon shadow-lg animate-fade-in">
         <CardHeader className="space-y-2 text-center">
-          <div className="flex justify-center mb-4">
+          <div className="flex justify-center mb-4 animate-scale-in">
             <Logo className="mx-auto" />
           </div>
-          <CardTitle className="text-2xl font-bold text-college-gray">Create Account</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-2xl font-bold text-college-gray animate-slide-in-right">Create Account</CardTitle>
+          <CardDescription className="animate-fade-in">
             Fill in your details to create your account
           </CardDescription>
         </CardHeader>
         
         <Tabs defaultValue="student" onValueChange={(v) => setRole(v as any)} className="w-full">
-          <TabsList className="grid grid-cols-3 mb-4 mx-4">
-            <TabsTrigger value="student">Student</TabsTrigger>
-            <TabsTrigger value="faculty">Faculty</TabsTrigger>
-            <TabsTrigger value="admin">Admin</TabsTrigger>
+          <TabsList className="grid grid-cols-3 mb-4 mx-4 animate-fade-in">
+            <TabsTrigger value="student" className="transition-all duration-300 hover:bg-college-maroon hover:text-white">Student</TabsTrigger>
+            <TabsTrigger value="faculty" className="transition-all duration-300 hover:bg-college-maroon hover:text-white">Faculty</TabsTrigger>
+            <TabsTrigger value="admin" className="transition-all duration-300 hover:bg-college-maroon hover:text-white">Admin</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="student">
+          <TabsContent value="student" className="animate-scale-in">
             <CardContent>
               <Form {...studentForm}>
                 <form onSubmit={studentForm.handleSubmit(onSubmitStudent)} className="space-y-4">
@@ -228,7 +228,7 @@ const SignupForm = () => {
                       control={studentForm.control}
                       name="name"
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="transition-all duration-300 hover:scale-[1.01]">
                           <FormLabel>Full Name</FormLabel>
                           <FormControl>
                             <Input placeholder="John Doe" {...field} />
@@ -242,10 +242,10 @@ const SignupForm = () => {
                       control={studentForm.control}
                       name="email"
                       render={({ field }) => (
-                        <FormItem>
+                        <FormItem className="transition-all duration-300 hover:scale-[1.01]">
                           <FormLabel>College Email</FormLabel>
                           <FormControl>
-                            <Input placeholder="24075a0501@vnrvjiet.in" {...field} />
+                            <Input placeholder="12345A6789@vnrvjiet.in" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -403,7 +403,7 @@ const SignupForm = () => {
                   
                   <Button 
                     type="submit" 
-                    className="w-full bg-college-maroon hover:bg-college-darkmaroon"
+                    className="w-full bg-college-maroon hover:bg-college-darkmaroon transition-all duration-500 hover:shadow-lg transform hover:-translate-y-1"
                     disabled={isLoading}
                   >
                     {isLoading ? "Creating Account..." : "Sign Up"}
@@ -684,10 +684,10 @@ const SignupForm = () => {
           </TabsContent>
         </Tabs>
         
-        <CardFooter className="flex flex-col space-y-4 mt-2">
+        <CardFooter className="flex flex-col space-y-4 mt-2 animate-fade-in">
           <div className="text-sm text-center text-gray-500">
             Already have an account?{" "}
-            <Link to="/login" className="text-college-maroon hover:text-college-darkmaroon font-medium">
+            <Link to="/login" className="text-college-maroon hover:text-college-darkmaroon font-medium transition-colors duration-300 hover:underline">
               Sign In
             </Link>
           </div>
