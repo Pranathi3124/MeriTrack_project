@@ -34,8 +34,9 @@ const StudentStats: React.FC<StudentStatsProps> = ({ achievements }) => {
     { name: 'Rejected', value: statusCounts.rejected },
   ];
 
-  const STATUS_COLORS = ['#FFBB28', '#00C49F', '#FF8042'];
-  const CATEGORY_COLORS = ['#8884d8', '#83a6ed', '#8dd1e1', '#82ca9d', '#a4de6c', '#d0ed57'];
+  // Using more distinct colors to avoid overlap in the legend
+  const STATUS_COLORS = ['#FFBB28', '#00C49F', '#FF5252'];
+  const CATEGORY_COLORS = ['#8884d8', '#83a6ed', '#8dd1e1', '#82ca9d', '#a4de6c', '#d0ed57', '#ffc658', '#ff8042'];
 
   const totalAchievements = achievements.length;
   const approvedPercentage = totalAchievements ? Math.round((statusCounts.approved / totalAchievements) * 100) : 0;
@@ -170,8 +171,8 @@ const StudentStats: React.FC<StudentStatsProps> = ({ achievements }) => {
                         <Cell key={`cell-${index}`} fill={STATUS_COLORS[index % STATUS_COLORS.length]} />
                       ))}
                     </Pie>
-                    {totalAchievements > 0 && <Tooltip />}
-                    {totalAchievements > 0 && <Legend />}
+                    {totalAchievements > 0 && <Tooltip formatter={(value) => [`${value} achievements`, "Count"]} />}
+                    {totalAchievements > 0 && <Legend layout="vertical" verticalAlign="middle" align="right" />}
                   </PieChart>
                 </ResponsiveContainer>
               ) : (

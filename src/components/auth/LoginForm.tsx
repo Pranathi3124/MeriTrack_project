@@ -1,220 +1,191 @@
 
 import React, { useState } from "react";
-import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Label } from "@/components/ui/label";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { signIn } from "@/lib/firebase";
 import { toast } from "sonner";
-import { signIn, validateEmail } from "@/lib/firebase";
-import { addAuditLog } from "@/lib/firebase";
-import Logo from "@/components/Logo";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { motion } from "framer-motion";
+
+const formSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters")
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 const LoginForm = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const returnTo = searchParams.get("returnTo") || "/";
-  const [isLoading, setIsLoading] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState<"student" | "faculty" | "admin">("student");
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
+  const location = useLocation();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: "",
+      password: ""
+    }
+  });
+  
+  const onSubmit = async (data: FormValues) => {
+    setIsSubmitting(true);
+    
     try {
-      console.log(`Validating login email: ${email} for role: ${role}`);
-      const isValid = validateEmail(email, role);
-      console.log(`Validation result: ${isValid}`);
+      const userCredential = await signIn(data.email, data.password);
       
-      if (!isValid) {
-        throw new Error(`Invalid email format for ${role} role`);
-      }
-
-      const user = await signIn(email, password);
-      console.log("Login successful, user:", user);
+      // Get user role from the token claims
+      const idTokenResult = await userCredential.user.getIdTokenResult();
+      const role = idTokenResult.claims.role || "";
       
-      await addAuditLog("login", user.uid, { role, email });
+      toast.success("Login successful!");
       
-      toast.success("Successfully logged in!");
-      
-      if (returnTo.startsWith("/")) {
-        navigate(returnTo);
-      } else {
-        if (role === "admin") {
-          navigate("/admin/dashboard");
-        } else if (role === "faculty") {
-          navigate("/faculty/dashboard");
-        } else {
+      // Redirect based on user role
+      switch (role) {
+        case "student":
           navigate("/student/dashboard");
-        }
+          break;
+        case "faculty":
+          navigate("/faculty/dashboard");
+          break;
+        case "admin":
+          navigate("/admin/dashboard");
+          break;
+        default:
+          // If no role or returnTo parameter, go to landing page
+          const returnTo = new URLSearchParams(location.search).get("returnTo");
+          navigate(returnTo || "/");
       }
+      
     } catch (error: any) {
       console.error("Login error:", error);
-      toast.error(error.message || "Failed to login");
+      toast.error(error.message || "Failed to login. Please check your credentials.");
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
-
+  
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+  
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 100
+      }
+    }
+  };
+  
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white px-4 py-12">
-      <Card className="w-full max-w-md border-t-4 border-t-college-maroon shadow-lg">
-        <CardHeader className="space-y-2 text-center">
-          <div className="flex justify-center mb-4">
-            <Logo className="mx-auto" />
-          </div>
-          <CardTitle className="text-2xl font-bold text-college-gray">Sign In</CardTitle>
-          <CardDescription>
-            Enter your credentials to access your account
-          </CardDescription>
-        </CardHeader>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 to-indigo-100">
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+        className="w-full max-w-md"
+      >
+        <motion.div variants={itemVariants}>
+          <Link to="/" className="flex items-center justify-center mb-8">
+            <img 
+              src="/logo.png" 
+              alt="MeriTrack Logo" 
+              className="h-16 w-auto"
+            />
+          </Link>
+        </motion.div>
         
-        <Tabs defaultValue="student" onValueChange={(v) => setRole(v as any)}>
-          <TabsList className="grid grid-cols-3 mb-4 mx-4">
-            <TabsTrigger value="student">Student</TabsTrigger>
-            <TabsTrigger value="faculty">Faculty</TabsTrigger>
-            <TabsTrigger value="admin">Admin</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="student">
+        <motion.div variants={itemVariants}>
+          <Card className="border-none shadow-lg">
+            <CardHeader className="space-y-1">
+              <CardTitle className="text-2xl font-bold text-center">Sign In</CardTitle>
+              <CardDescription className="text-center">
+                Enter your credentials to access your account
+              </CardDescription>
+            </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">College Email</Label>
-                  <Input 
-                    id="email" 
-                    type="email" 
-                    placeholder="e.g., 24075a0501@vnrvjiet.in"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Enter your email"
+                            type="email"
+                            {...field}
+                            className="h-12"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="password">Password</Label>
-                    <a 
-                      href="#" 
-                      className="text-sm text-college-maroon hover:text-college-lightmaroon"
-                    >
-                      Forgot password?
-                    </a>
-                  </div>
-                  <Input 
-                    id="password" 
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
+                  
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Enter your password"
+                            type="password"
+                            {...field}
+                            className="h-12"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
-                </div>
-                <Button 
-                  type="submit" 
-                  className="w-full bg-college-maroon hover:bg-college-darkmaroon"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Signing in..." : "Sign In"}
-                </Button>
-              </form>
+                  
+                  <Button
+                    type="submit"
+                    className="w-full h-12 bg-college-maroon hover:bg-college-darkmaroon"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? "Signing In..." : "Sign In"}
+                  </Button>
+                </form>
+              </Form>
             </CardContent>
-          </TabsContent>
-          
-          <TabsContent value="faculty">
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="faculty-email">Faculty Email</Label>
-                  <Input 
-                    id="faculty-email" 
-                    type="email" 
-                    placeholder="faculty@vnrvjiet.in"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="faculty-password">Password</Label>
-                    <a 
-                      href="#" 
-                      className="text-sm text-college-maroon hover:text-college-lightmaroon"
-                    >
-                      Forgot password?
-                    </a>
-                  </div>
-                  <Input 
-                    id="faculty-password" 
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                <Button 
-                  type="submit" 
-                  className="w-full bg-college-maroon hover:bg-college-darkmaroon"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Signing in..." : "Sign In"}
-                </Button>
-              </form>
-            </CardContent>
-          </TabsContent>
-          
-          <TabsContent value="admin">
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="admin-email">Admin Email</Label>
-                  <Input 
-                    id="admin-email" 
-                    type="email" 
-                    placeholder="admin@vnrvjiet.in"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="admin-password">Password</Label>
-                    <a 
-                      href="#" 
-                      className="text-sm text-college-maroon hover:text-college-lightmaroon"
-                    >
-                      Forgot password?
-                    </a>
-                  </div>
-                  <Input 
-                    id="admin-password" 
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                <Button 
-                  type="submit" 
-                  className="w-full bg-college-maroon hover:bg-college-darkmaroon"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Signing in..." : "Sign In"}
-                </Button>
-              </form>
-            </CardContent>
-          </TabsContent>
-        </Tabs>
-        
-        <CardFooter className="flex flex-col space-y-4 mt-2">
-          <div className="text-sm text-center text-gray-500">
-            Don't have an account? <Link to="/signup" className="text-college-maroon hover:text-college-darkmaroon font-medium">Sign up</Link>
-          </div>
-        </CardFooter>
-      </Card>
+            <CardFooter className="flex flex-col space-y-4">
+              <div className="text-sm text-center text-gray-500">
+                Don't have an account?{" "}
+                <Link to="/signup" className="text-college-maroon hover:underline">
+                  Create Account
+                </Link>
+              </div>
+              <div className="text-sm text-center">
+                <Link to="/" className="text-gray-500 hover:text-gray-700">
+                  Back to Home
+                </Link>
+              </div>
+            </CardFooter>
+          </Card>
+        </motion.div>
+      </motion.div>
     </div>
   );
 };

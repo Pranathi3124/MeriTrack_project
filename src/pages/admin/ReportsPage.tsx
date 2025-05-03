@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,7 +14,12 @@ import { getAllAchievements } from "@/lib/firebase";
 import { toast } from "sonner";
 import { Timestamp } from "firebase/firestore";
 
-const COLORS = ['#8B0000', '#B22222', '#CD5C5C', '#FF6347', '#FFA07A', '#E9967A'];
+const COLORS = ['#8B0000', '#1E88E5', '#43A047', '#FB8C00', '#D81B60', '#8E24AA', '#3949AB', '#00ACC1'];
+const STATUS_COLORS = {
+  approved: '#43A047', // Green
+  pending: '#FB8C00',  // Orange
+  rejected: '#D81B60'  // Pink/Red
+};
 
 const ReportsPage = () => {
   const { user } = useAuth();
@@ -375,7 +379,11 @@ const ReportsPage = () => {
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Bar dataKey="value" fill="#8B0000" name="Achievements" />
+                    <Bar dataKey="value" name="Achievements">
+                      {branchData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -393,7 +401,11 @@ const ReportsPage = () => {
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Bar dataKey="value" fill="#8B0000" name="Achievements" />
+                    <Bar dataKey="value" name="Achievements">
+                      {yearData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[(index + 3) % COLORS.length]} />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -422,7 +434,7 @@ const ReportsPage = () => {
                       ))}
                     </Pie>
                     <Tooltip formatter={(value) => [`${value} achievements`, "Count"]} />
-                    <Legend />
+                    <Legend layout="vertical" verticalAlign="bottom" align="center" />
                   </PieChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -446,12 +458,12 @@ const ReportsPage = () => {
                       fill="#8B0000"
                       dataKey="value"
                     >
-                      <Cell fill="#228B22" /> {/* Approved - Green */}
-                      <Cell fill="#FFD700" /> {/* Pending - Yellow */}
-                      <Cell fill="#DC143C" /> {/* Rejected - Red */}
+                      <Cell fill={STATUS_COLORS.approved} /> {/* Approved - Green */}
+                      <Cell fill={STATUS_COLORS.pending} /> {/* Pending - Orange */}
+                      <Cell fill={STATUS_COLORS.rejected} /> {/* Rejected - Red */}
                     </Pie>
                     <Tooltip formatter={(value) => [`${value} achievements`, "Count"]} />
-                    <Legend />
+                    <Legend layout="vertical" verticalAlign="bottom" align="center" />
                   </PieChart>
                 </ResponsiveContainer>
               </CardContent>
