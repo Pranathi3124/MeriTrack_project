@@ -67,8 +67,10 @@ const Navbar = () => {
         <div className="flex items-center flex-shrink-0 mr-4">
           <Link to="/" className="flex items-center">
             <Logo />
-            <div className="hidden md:block ml-2 text-xs leading-tight">
-              <span className="font-semibold text-college-maroon">Vallurupalli Nageswara Rao Vignana Jyothi Institute of Engineering &Technology</span>
+            <div className="hidden md:block ml-2 text-xs leading-tight max-w-[200px]">
+              <span className="font-semibold text-college-maroon block">Vallurupalli Nageswara Rao</span>
+              <span className="font-semibold text-college-maroon block">Vignana Jyothi Institute of</span>
+              <span className="font-semibold text-college-maroon block">Engineering &Technology</span>
             </div>
           </Link>
         </div>

@@ -1,8 +1,9 @@
+
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/layout/Navbar";
-import { ArrowRight, CheckCircle, Award, BookOpen, GraduationCap, Trophy, UserPlus } from "lucide-react";
+import { ArrowRight, CheckCircle, Award, BookOpen, GraduationCap, Trophy, UserPlus, Book, School, Building, University, Landmark } from "lucide-react";
 
 const AboutPage = () => {
   useEffect(() => {
@@ -56,12 +57,15 @@ const AboutPage = () => {
               </p>
             </div>
             <div className="relative">
-              <div className="rounded-2xl overflow-hidden shadow-xl">
+              <div className="rounded-2xl overflow-hidden shadow-xl border-4 border-college-lightmaroon/20">
                 <img 
-                  src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158" 
-                  alt="Students collaborating on academic achievements" 
+                  src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d" 
+                  alt="Student achievements tracking platform" 
                   className="w-full h-auto object-cover"
                 />
+                <div className="absolute bottom-4 right-4 bg-college-maroon text-white px-3 py-1 rounded-full text-sm">
+                  <School className="inline-block mr-1 h-4 w-4" /> Student Success
+                </div>
               </div>
               <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-college-maroon rounded-full opacity-20"></div>
               <div className="absolute -top-6 -right-6 w-32 h-32 bg-college-maroon rounded-full opacity-20"></div>
@@ -98,7 +102,7 @@ const AboutPage = () => {
                 description: "Offer tools for students to present their verified achievements to potential employers and institutions."
               }
             ].map((item, index) => (
-              <div key={index} className="bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition-all">
+              <div key={index} className="bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition-all border-l-4 border-college-maroon">
                 <div className="flex justify-center mb-6">
                   <div className="w-16 h-16 rounded-full bg-college-maroon/10 flex items-center justify-center">
                     {item.icon}
@@ -125,26 +129,30 @@ const AboutPage = () => {
           <div className="grid md:grid-cols-2 gap-8 animate-on-scroll">
             {[
               {
+                icon: <University className="h-6 w-6 text-college-maroon" />,
                 title: "Built for Indian Education",
                 description: "Designed specifically for the unique structure and requirements of Indian engineering and professional colleges."
               },
               {
+                icon: <Landmark className="h-6 w-6 text-college-maroon" />,
                 title: "Faculty Verification",
                 description: "Every achievement is verified by faculty members, adding credibility that self-reported portfolios simply can't match."
               },
               {
+                icon: <Building className="h-6 w-6 text-college-maroon" />,
                 title: "Comprehensive Categories",
                 description: "From academic excellence to sports achievements, internships to cultural activities - we track it all in one place."
               },
               {
+                icon: <Book className="h-6 w-6 text-college-maroon" />,
                 title: "Insight-Driven Growth",
                 description: "Advanced analytics help students identify their strengths and areas for improvement throughout their academic journey."
               }
             ].map((item, index) => (
-              <div key={index} className="bg-gray-50 p-8 rounded-xl border border-gray-100">
+              <div key={index} className="bg-gray-50 p-8 rounded-xl border border-gray-100 hover:border-college-maroon transition-colors">
                 <h3 className="text-xl font-bold mb-4 flex items-center">
                   <span className="w-8 h-8 rounded-full bg-college-maroon text-white flex items-center justify-center mr-3">
-                    {index + 1}
+                    {item.icon}
                   </span>
                   {item.title}
                 </h3>
@@ -170,26 +178,30 @@ const AboutPage = () => {
               {
                 name: "Dr. Arun Kumar",
                 role: "Founder & Director",
-                avatar: "AK"
+                avatar: "AK",
+                color: "bg-college-maroon"
               },
               {
                 name: "Priya Sharma",
                 role: "Head of Product",
-                avatar: "PS"
+                avatar: "PS",
+                color: "bg-college-darkmaroon"
               },
               {
                 name: "Vikram Reddy",
                 role: "Chief Technology Officer",
-                avatar: "VR"
+                avatar: "VR",
+                color: "bg-college-maroon"
               },
               {
                 name: "Meera Patel",
                 role: "Student Success Manager",
-                avatar: "MP"
+                avatar: "MP",
+                color: "bg-college-darkmaroon"
               }
             ].map((member, index) => (
               <div key={index} className="text-center">
-                <div className="w-32 h-32 rounded-full bg-college-maroon text-white flex items-center justify-center text-3xl font-bold mx-auto mb-4">
+                <div className={`w-32 h-32 rounded-full ${member.color} text-white flex items-center justify-center text-3xl font-bold mx-auto mb-4 shadow-lg`}>
                   {member.avatar}
                 </div>
                 <h3 className="text-xl font-bold mb-1">{member.name}</h3>
