@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -59,8 +58,8 @@ const AboutPage = () => {
             <div className="relative">
               <div className="rounded-2xl overflow-hidden shadow-xl">
                 <img 
-                  src="/lovable-uploads/09ca2645-762c-4dc5-855e-517732e69837.png" 
-                  alt="College students collaborating" 
+                  src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158" 
+                  alt="Students collaborating on academic achievements" 
                   className="w-full h-auto object-cover"
                 />
               </div>

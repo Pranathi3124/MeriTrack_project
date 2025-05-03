@@ -12,6 +12,7 @@ import SignupPage from "./pages/signup/SignupPage";
 import ContactPage from "./pages/contact/ContactPage";
 import AboutPage from "./pages/about/AboutPage";
 import NotFound from "./pages/NotFound";
+import FeaturesPage from "./pages/features/FeaturesPage";
 
 // Student Pages
 import StudentDashboardPage from "./pages/student/StudentDashboardPage";
@@ -49,6 +50,7 @@ const App = () => (
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/about" element={<AboutPage />} />
+            <Route path="/features" element={<FeaturesPage />} />
             
             {/* Student Routes */}
             <Route path="student" element={<AppLayout requiredRole="student" />}>

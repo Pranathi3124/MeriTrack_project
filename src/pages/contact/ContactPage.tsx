@@ -2,26 +2,13 @@
 import React from 'react';
 import { MapPin, Phone, Mail, Facebook, Instagram, Twitter, Linkedin, Youtube } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
+import Navbar from "@/components/layout/Navbar";
 
 const ContactPage = () => {
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      <header className="w-full bg-white py-4 px-6 border-b">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center">
-            <img
-              src="/lovable-uploads/0c0a29fb-88ab-4bb0-9e77-4035cd35ce81.png"
-              alt="VNRVJIET Logo"
-              className="h-16"
-            />
-            <h1 className="text-4xl font-bold text-[#9B1C1F] ml-4">VNRVJIET</h1>
-          </div>
-          <button className="text-gray-600 text-xl">
-            MENU
-          </button>
-        </div>
-      </header>
+      {/* Using the shared Navbar component instead of a custom header */}
+      <Navbar />
 
       {/* Main Content */}
       <main className="flex-grow bg-background py-12 px-4 sm:px-6 lg:px-8">
@@ -104,11 +91,7 @@ const ContactPage = () => {
       <footer className="bg-[#9B1C1F] text-white py-8">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col items-center">
-            <img
-              src="/lovable-uploads/df180aad-c8e4-457d-97dd-da5bdbd5da6e.png"
-              alt="VNRVJIET Footer Logo"
-              className="h-20 mb-6"
-            />
+            <div className="text-2xl font-bold mb-6">VNRVJIET</div>
             <div className="flex space-x-4 mb-4">
               <a href="https://facebook.com/vnrvjiet" target="_blank" rel="noopener noreferrer" className="hover:opacity-80">
                 <Facebook className="w-6 h-6" />

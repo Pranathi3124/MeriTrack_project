@@ -77,7 +77,7 @@ const LandingPage = () => {
             </div>
             
             <div className="relative mt-8 md:mt-0 hidden md:block">
-              <div className="relative shadow-2xl rounded-2xl overflow-hidden border border-white/20">
+              <div className="relative shadow-2xl rounded-2xl overflow-hidden border-2 border-white/30 transform hover:scale-[1.02] transition-all duration-500">
                 <img 
                   src="/lovable-uploads/08042429-71c8-45f9-9e40-2a3a81117228.png" 
                   alt="MeriTrack Campus" 
@@ -85,6 +85,8 @@ const LandingPage = () => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-tr from-college-maroon/40 to-transparent"></div>
               </div>
+              <div className="absolute -bottom-8 -right-8 w-56 h-56 bg-white/10 rounded-full blur-2xl"></div>
+              <div className="absolute -top-8 -left-8 w-56 h-56 bg-white/10 rounded-full blur-2xl"></div>
             </div>
           </div>
         </div>
