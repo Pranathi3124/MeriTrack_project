@@ -12,6 +12,7 @@ import { signIn } from "@/lib/firebase";
 import { toast } from "sonner";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { motion } from "framer-motion";
+import { getAuth } from "firebase/auth";
 
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -39,32 +40,51 @@ const LoginForm = () => {
     try {
       const userCredential = await signIn(data.email, data.password);
       
-      // Get user role from the token claims
-      const idTokenResult = await userCredential.user.getIdTokenResult();
-      const role = idTokenResult.claims.role || "";
+      // Get user role from the auth token
+      const auth = getAuth();
+      const currentUser = auth.currentUser;
       
-      toast.success("Login successful!");
-      
-      // Redirect based on user role
-      switch (role) {
-        case "student":
-          navigate("/student/dashboard");
-          break;
-        case "faculty":
-          navigate("/faculty/dashboard");
-          break;
-        case "admin":
-          navigate("/admin/dashboard");
-          break;
-        default:
-          // If no role or returnTo parameter, go to landing page
-          const returnTo = new URLSearchParams(location.search).get("returnTo");
-          navigate(returnTo || "/");
+      if (currentUser) {
+        const idTokenResult = await currentUser.getIdTokenResult();
+        const role = idTokenResult.claims.role || "";
+        
+        toast.success("Login successful!");
+        
+        // Redirect based on user role
+        switch (role) {
+          case "student":
+            navigate("/student/dashboard");
+            break;
+          case "faculty":
+            navigate("/faculty/dashboard");
+            break;
+          case "admin":
+            navigate("/admin/dashboard");
+            break;
+          default:
+            // If no role or returnTo parameter, go to landing page
+            const returnTo = new URLSearchParams(location.search).get("returnTo");
+            navigate(returnTo || "/");
+        }
+      } else {
+        // Fallback if we can't get the current user for some reason
+        toast.success("Login successful! Redirecting to home page.");
+        navigate("/");
       }
       
     } catch (error: any) {
       console.error("Login error:", error);
-      toast.error(error.message || "Failed to login. Please check your credentials.");
+      
+      // Provide more specific error messages
+      if (error.code === 'permission-denied') {
+        toast.error("Authentication error: Missing or insufficient permissions. Please contact support.");
+      } else if (error.code === 'auth/user-not-found') {
+        toast.error("No account found with this email address.");
+      } else if (error.code === 'auth/wrong-password') {
+        toast.error("Incorrect password. Please try again.");
+      } else {
+        toast.error(error.message || "Failed to login. Please check your credentials.");
+      }
     } finally {
       setIsSubmitting(false);
     }
