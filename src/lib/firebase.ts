@@ -26,7 +26,8 @@ import {
   Timestamp,
   deleteDoc,
   orderBy,
-  limit
+  limit,
+  DocumentData
 } from "firebase/firestore";
 import {
   getStorage,
@@ -239,12 +240,13 @@ export const getAllUsers = async (filterRole?: UserRole) => {
     const users: any[] = [];
     
     querySnapshot.forEach((doc) => {
+      const data = doc.data();
       users.push({
         id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt instanceof Timestamp 
-          ? doc.data().createdAt.toDate() 
-          : doc.data().createdAt
+        ...data,
+        createdAt: data.createdAt instanceof Timestamp 
+          ? data.createdAt.toDate() 
+          : data.createdAt
       });
     });
     

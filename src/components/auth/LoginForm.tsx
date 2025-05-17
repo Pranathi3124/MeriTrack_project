@@ -52,7 +52,7 @@ const LoginForm = () => {
       // Get user profile from Firestore to determine role
       const userProfile = await getUserProfile(userCredential.uid);
       
-      if (userProfile) {
+      if (userProfile && userProfile.role) {
         const userRole = userProfile.role;
         
         toast.success("Login successful!");

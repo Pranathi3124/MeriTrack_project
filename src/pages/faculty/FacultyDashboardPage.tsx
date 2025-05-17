@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { getAllAchievements } from "@/lib/firebase";
+import { getAllAchievements, Achievement } from "@/lib/firebase";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -15,7 +16,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { format, addDays } from "date-fns";
 import { cn } from "@/lib/utils";
-import { Achievement } from "@/lib/firebase";
+
+// Define the Achievement type expected by AchievementReviewCard
+interface AchievementReviewCardProps {
+  achievement: Achievement;
+  onStatusUpdate: () => void;
+}
 
 const FacultyDashboardPage = () => {
   const { user } = useAuth();
@@ -441,7 +447,7 @@ const FacultyDashboardPage = () => {
               {approvedAchievements.map((achievement) => (
                 <AchievementReviewCard 
                   key={achievement.id} 
-                  achievement={achievement} 
+                  achievement={achievement}
                   onStatusUpdate={fetchAchievements}
                 />
               ))}
@@ -470,7 +476,7 @@ const FacultyDashboardPage = () => {
               {rejectedAchievements.map((achievement) => (
                 <AchievementReviewCard 
                   key={achievement.id} 
-                  achievement={achievement} 
+                  achievement={achievement}
                   onStatusUpdate={fetchAchievements}
                 />
               ))}
