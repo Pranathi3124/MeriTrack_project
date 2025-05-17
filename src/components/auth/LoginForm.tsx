@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,9 +12,11 @@ import { signIn } from "@/lib/firebase";
 import { toast } from "sonner";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { motion } from "framer-motion";
-import { LogIn } from "lucide-react";
+import { LogIn, HelpCircle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getUserProfile } from "@/lib/firebase";
+import Logo from "@/components/Logo";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -91,7 +94,7 @@ const LoginForm = () => {
     }
   };
   
-  // Generate placeholder based on selected role
+  // Generate placeholder and sample email based on selected role
   const getEmailPlaceholder = () => {
     switch (role) {
       case "student":
@@ -104,17 +107,27 @@ const LoginForm = () => {
         return "Enter your email";
     }
   };
+
+  // Sample email IDs for quick reference
+  const getSampleEmails = () => {
+    switch (role) {
+      case "student":
+        return ["24075A0501@vnrvjiet.in", "20071A1201@vnrvjiet.in", "22071A0501@vnrvjiet.in"];
+      case "faculty":
+        return ["professor@vnrvjiet.in", "hod@vnrvjiet.in", "faculty@vnrvjiet.in"];
+      case "admin":
+        return ["admin@vnrvjiet.in"];
+      default:
+        return [];
+    }
+  };
   
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-md border-t-4 border-t-college-maroon shadow-md">
         <CardHeader className="space-y-1 text-center pb-4">
           <div className="flex justify-center items-center mb-2">
-            <img 
-              src="/logo.png" 
-              alt="MeriTrack Logo" 
-              className="h-16 w-auto"
-            />
+            <Logo className="h-16 w-auto" />
             <h1 className="text-2xl font-bold text-college-maroon ml-2">MeriTrack</h1>
           </div>
           <CardTitle className="text-2xl font-bold">Sign In</CardTitle>
@@ -139,7 +152,22 @@ const LoginForm = () => {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">College Email</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="email">College Email</Label>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Link to="/sample-emails" className="text-sm text-gray-500 flex items-center">
+                          <HelpCircle className="h-4 w-4 mr-1" />
+                          <span>Valid Email Formats</span>
+                        </Link>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Click to see valid email formats</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <FormField
                   control={form.control}
                   name="email"
@@ -158,6 +186,14 @@ const LoginForm = () => {
                     </FormItem>
                   )}
                 />
+                <div className="text-xs text-gray-500 mt-1">
+                  <span>Sample email{getSampleEmails().length > 1 ? 's' : ''}: </span>
+                  {getSampleEmails().map((email, index) => (
+                    <span key={email} className="font-mono">
+                      {email}{index < getSampleEmails().length - 1 ? ', ' : ''}
+                    </span>
+                  ))}
+                </div>
               </div>
               
               <div className="space-y-2">
