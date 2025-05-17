@@ -42,14 +42,15 @@ const LoginForm = () => {
     setIsSubmitting(true);
     
     try {
-      // The issue is here - Firebase's signIn returns a UserCredential where the user is directly accessible
-      const user = await signIn(data.email, data.password);
+      // Sign in and get the user credential
+      const userCredential = await signIn(data.email, data.password);
       
-      // Get the user ID directly from the user object 
-      const userId = user.uid;
-      
+      if (!userCredential || !userCredential.uid) {
+        throw new Error("Failed to authenticate");
+      }
+
       // Get user profile from Firestore to determine role
-      const userProfile = await getUserProfile(userId);
+      const userProfile = await getUserProfile(userCredential.uid);
       
       if (userProfile) {
         const userRole = userProfile.role;
