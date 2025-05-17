@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -40,8 +39,11 @@ const LoginForm = () => {
     setIsSubmitting(true);
     
     try {
-      const userCredential = await signIn(data.email, data.password);
-      const userId = userCredential.user.uid;
+      // The issue is here - Firebase's signIn returns a UserCredential where the user is directly accessible
+      const user = await signIn(data.email, data.password);
+      
+      // Get the user ID directly from the user object 
+      const userId = user.uid;
       
       // Get user profile from Firestore to determine role
       const userProfile = await getUserProfile(userId);

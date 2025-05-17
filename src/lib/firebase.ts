@@ -90,6 +90,7 @@ export const signUp = async (email: string, password: string, role: UserRole, us
 export const signIn = async (email: string, password: string) => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    // Return the user object directly instead of the userCredential
     return userCredential.user;
   } catch (error) {
     console.error("Error signing in:", error);
