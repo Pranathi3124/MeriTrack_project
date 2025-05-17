@@ -8,7 +8,8 @@ import {
   signOut,
   updateProfile,
   sendPasswordResetEmail,
-  User as FirebaseUser
+  User as FirebaseUser,
+  updatePassword
 } from "firebase/auth";
 import {
   getFirestore,
@@ -23,7 +24,9 @@ import {
   addDoc,
   serverTimestamp,
   Timestamp,
-  deleteDoc
+  deleteDoc,
+  orderBy,
+  limit
 } from "firebase/firestore";
 import {
   getStorage,
@@ -48,8 +51,33 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 
+// Type definitions
+export type UserRole = "student" | "faculty" | "admin";
+export type AchievementCategory = "academic" | "sports" | "internships" | "hackathon" | "workshops" | "co-curricular";
+export type AchievementStatus = "pending" | "approved" | "rejected";
+
+export interface Achievement {
+  id: string;
+  title: string;
+  category: AchievementCategory;
+  description: string;
+  date: Date | Timestamp;
+  userId: string;
+  studentName: string;
+  studentEmail: string;
+  rollNo: string;
+  branch: string;
+  year: string;
+  status: AchievementStatus;
+  documentUrl?: string;
+  feedback?: string;
+  reviewedBy?: string;
+  reviewedAt?: Date | Timestamp;
+  createdAt: Date | Timestamp;
+}
+
 // Email validation function
-export const validateEmail = (email: string, role: "student" | "faculty" | "admin"): boolean => {
+export const validateEmail = (email: string, role: UserRole): boolean => {
   // Different validation patterns based on role
   if (role === "student") {
     // Student emails must be in the format: 12345A6789@vnrvjiet.in
@@ -76,7 +104,7 @@ export const signIn = async (email: string, password: string) => {
   }
 };
 
-export const signUp = async (email: string, password: string, role: "student" | "faculty" | "admin", userData: any) => {
+export const signUp = async (email: string, password: string, role: UserRole, userData: any) => {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
@@ -93,6 +121,9 @@ export const signUp = async (email: string, password: string, role: "student" | 
     await updateProfile(user, {
       displayName: userData.name
     });
+
+    // Add audit log for user creation
+    await addAuditLog("user_created", user.uid, { email, role });
 
     return user;
   } catch (error) {
@@ -121,6 +152,16 @@ export const sendPasswordReset = async (email: string) => {
   }
 };
 
+export const changePassword = async (user: FirebaseUser, newPassword: string) => {
+  try {
+    await updatePassword(user, newPassword);
+    return true;
+  } catch (error) {
+    console.error("Error changing password:", error);
+    throw error;
+  }
+};
+
 // User functions
 export const getUserProfile = async (userId: string) => {
   try {
@@ -144,6 +185,90 @@ export const updateUserProfile = async (userId: string, data: any) => {
     return true;
   } catch (error) {
     console.error("Error updating user profile:", error);
+    throw error;
+  }
+};
+
+export const uploadProfilePicture = async (userId: string, file: File) => {
+  try {
+    const storageRef = ref(storage, `profile_pictures/${userId}`);
+    const uploadTask = uploadBytesResumable(storageRef, file);
+    
+    return new Promise<string>((resolve, reject) => {
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          // Progress can be monitored here
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          console.log("Upload is " + progress + "% done");
+        },
+        (error) => {
+          // Error handling
+          console.error("Error uploading profile picture:", error);
+          reject(error);
+        },
+        async () => {
+          // On complete
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          // Update user profile with photo URL
+          await updateDoc(doc(db, "users", userId), {
+            photoURL: downloadURL
+          });
+          resolve(downloadURL);
+        }
+      );
+    });
+  } catch (error) {
+    console.error("Error uploading profile picture:", error);
+    throw error;
+  }
+};
+
+// User management for admin
+export const getAllUsers = async (filterRole?: UserRole) => {
+  try {
+    let usersQuery;
+    
+    if (filterRole) {
+      usersQuery = query(collection(db, "users"), where("role", "==", filterRole));
+    } else {
+      usersQuery = query(collection(db, "users"));
+    }
+    
+    const querySnapshot = await getDocs(usersQuery);
+    const users: any[] = [];
+    
+    querySnapshot.forEach((doc) => {
+      users.push({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt instanceof Timestamp 
+          ? doc.data().createdAt.toDate() 
+          : doc.data().createdAt
+      });
+    });
+    
+    return users;
+  } catch (error) {
+    console.error("Error getting all users:", error);
+    throw error;
+  }
+};
+
+export const removeUser = async (userId: string) => {
+  try {
+    // Get user data before deletion for audit log
+    const userData = await getUserProfile(userId);
+    
+    // Delete user document
+    await deleteDoc(doc(db, "users", userId));
+    
+    // Add audit log
+    await addAuditLog("user_deleted", "admin", { deletedUserId: userId, userData });
+    
+    return true;
+  } catch (error) {
+    console.error("Error removing user:", error);
     throw error;
   }
 };
@@ -185,6 +310,63 @@ export const getUserAchievements = async (userId: string) => {
   }
 };
 
+export const getAllAchievements = async (filters: any = {}) => {
+  try {
+    let achievementsQuery = collection(db, "achievements");
+    let constraints: any[] = [];
+    
+    if (filters.status) {
+      constraints.push(where("status", "==", filters.status));
+    }
+    
+    if (filters.category) {
+      constraints.push(where("category", "==", filters.category));
+    }
+    
+    if (filters.branch) {
+      constraints.push(where("branch", "==", filters.branch));
+    }
+    
+    if (filters.year) {
+      constraints.push(where("year", "==", filters.year));
+    }
+    
+    // Always order by createdAt in descending order (newest first)
+    constraints.push(orderBy("createdAt", "desc"));
+    
+    // Apply limit if provided
+    if (filters.limit) {
+      constraints.push(limit(filters.limit));
+    }
+    
+    const q = query(achievementsQuery, ...constraints);
+    const querySnapshot = await getDocs(q);
+    
+    const achievements: Achievement[] = [];
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      achievements.push({
+        id: doc.id,
+        ...data,
+        createdAt: data.createdAt instanceof Timestamp 
+          ? data.createdAt.toDate() 
+          : data.createdAt,
+        date: data.date instanceof Timestamp 
+          ? data.date.toDate() 
+          : data.date,
+        reviewedAt: data.reviewedAt instanceof Timestamp 
+          ? data.reviewedAt.toDate() 
+          : data.reviewedAt
+      } as Achievement);
+    });
+    
+    return achievements;
+  } catch (error) {
+    console.error("Error getting all achievements:", error);
+    throw error;
+  }
+};
+
 export const updateAchievement = async (achievementId: string, data: any) => {
   try {
     await updateDoc(doc(db, "achievements", achievementId), data);
@@ -205,7 +387,7 @@ export const deleteAchievement = async (achievementId: string) => {
   }
 };
 
-// File upload function
+// File upload functions
 export const uploadFile = async (file: File, path: string) => {
   try {
     const storageRef = ref(storage, path);
@@ -233,6 +415,95 @@ export const uploadFile = async (file: File, path: string) => {
     });
   } catch (error) {
     console.error("Error in upload file function:", error);
+    throw error;
+  }
+};
+
+export const uploadAchievementDocument = async (achievementId: string, file: File) => {
+  try {
+    const downloadURL = await uploadFile(
+      file, 
+      `achievement_documents/${achievementId}/${file.name}`
+    ) as string;
+    
+    // Update achievement with document URL
+    await updateDoc(doc(db, "achievements", achievementId), {
+      documentUrl: downloadURL
+    });
+    
+    return downloadURL;
+  } catch (error) {
+    console.error("Error uploading achievement document:", error);
+    throw error;
+  }
+};
+
+// Audit log functions
+export const addAuditLog = async (action: string, userId: string, details: any = {}) => {
+  try {
+    // Get IP address (in a real app, this would be from the server)
+    const ipAddress = "IP not available in client";
+    
+    await addDoc(collection(db, "audit_logs"), {
+      action,
+      userId,
+      details,
+      ipAddress,
+      timestamp: serverTimestamp()
+    });
+    
+    return true;
+  } catch (error) {
+    console.error("Error adding audit log:", error);
+    throw error;
+  }
+};
+
+export const getAuditLogs = async (filters: any = {}) => {
+  try {
+    let constraints: any[] = [];
+    
+    if (filters.action && filters.action !== "all") {
+      constraints.push(where("action", "==", filters.action));
+    }
+    
+    if (filters.startDate) {
+      const startDate = new Date(filters.startDate);
+      startDate.setHours(0, 0, 0, 0);
+      constraints.push(where("timestamp", ">=", startDate));
+    }
+    
+    if (filters.endDate) {
+      const endDate = new Date(filters.endDate);
+      endDate.setHours(23, 59, 59, 999);
+      constraints.push(where("timestamp", "<=", endDate));
+    }
+    
+    // Always order by timestamp in descending order (newest first)
+    constraints.push(orderBy("timestamp", "desc"));
+    
+    // Apply limit if provided
+    if (filters.limit) {
+      constraints.push(limit(filters.limit));
+    }
+    
+    const q = query(collection(db, "audit_logs"), ...constraints);
+    const querySnapshot = await getDocs(q);
+    
+    const logs: any[] = [];
+    querySnapshot.forEach((doc) => {
+      logs.push({
+        id: doc.id,
+        ...doc.data(),
+        timestamp: doc.data().timestamp instanceof Timestamp 
+          ? doc.data().timestamp.toDate() 
+          : doc.data().timestamp
+      });
+    });
+    
+    return logs;
+  } catch (error) {
+    console.error("Error getting audit logs:", error);
     throw error;
   }
 };

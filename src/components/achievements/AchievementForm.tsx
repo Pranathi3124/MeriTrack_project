@@ -8,7 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { AchievementCategory, addAchievement, addAuditLog, uploadAchievementDocument } from "@/lib/firebase";
+import { 
+  AchievementCategory, 
+  addAchievement, 
+  addAuditLog, 
+  uploadAchievementDocument 
+} from "@/lib/firebase";
 import { Calendar as CalendarIcon, Upload, FileX } from "lucide-react";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
