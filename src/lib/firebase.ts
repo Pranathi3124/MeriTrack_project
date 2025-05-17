@@ -1,16 +1,15 @@
-
 import { initializeApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, updatePassword, User } from "firebase/auth";
 import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, query, where, getDocs, addDoc, deleteDoc, Timestamp, serverTimestamp } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBgIqRBzVraKgX-J7R1z3x3G5QfbUeTdaw",
-  authDomain: "studentachievement-cc943.firebaseapp.com",
-  projectId: "studentachievement-cc943",
-  storageBucket: "studentachievement-cc943.firebasestorage.app",
-  messagingSenderId: "542510757562",
-  appId: "1:542510757562:web:88f5e3bb332f9c07877483"
+  apiKey: "AIzaSyByP1CGXCpQSPvQSYSgAE50n8qacAoPz9Y",
+  authDomain: "achivements-9a327.firebaseapp.com",
+  projectId: "achivements-9a327",
+  storageBucket: "achivements-9a327.firebasestorage.app",
+  messagingSenderId: "1094047518758",
+  appId: "1:1094047518758:web:06a72948e627ebae0c96e7"
 };
 
 // Initialize Firebase
