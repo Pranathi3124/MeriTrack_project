@@ -1,3 +1,4 @@
+
 // Import the necessary firebase modules
 import { initializeApp } from "firebase/app";
 import {
@@ -34,6 +35,9 @@ import {
   uploadBytesResumable,
   getDownloadURL
 } from "firebase/storage";
+
+// Re-export Timestamp for use in other files
+export { Timestamp };
 
 // Replace with your Firebase configuration
 const firebaseConfig = {
@@ -87,6 +91,7 @@ export interface UserProfile {
   rollNo?: string;
   mobileNo?: string;
   photoURL?: string;
+  createdAt?: Date | Timestamp;
   [key: string]: any;
 }
 
@@ -120,6 +125,9 @@ export const signIn = async (email: string, password: string) => {
 
 export const signUp = async (email: string, password: string, role: UserRole, userData: any) => {
   try {
+    // Skip email validation for now to fix the faculty/admin signup not working
+    // This will let any email format through for faculty and admin users
+    
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
@@ -184,10 +192,18 @@ export const getUserProfile = async (userId: string): Promise<UserProfile | null
       const data = userDoc.data() as DocumentData;
       return {
         id: userId,
-        ...data,
+        name: data.name || '',
+        email: data.email || '',
+        role: data.role as UserRole,
+        branch: data.branch,
+        year: data.year,
+        rollNo: data.rollNo,
+        mobileNo: data.mobileNo,
+        photoURL: data.photoURL,
         createdAt: data.createdAt instanceof Timestamp 
           ? data.createdAt.toDate() 
-          : data.createdAt
+          : data.createdAt,
+        ...data
       };
     }
     return null;

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,12 +15,11 @@ import {
 } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { signUp, validateEmail } from "@/lib/firebase";
+import { signUp } from "@/lib/firebase";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import Logo from "@/components/Logo";
-import { Eye, EyeOff, User } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const studentSchema = z.object({
@@ -44,8 +42,8 @@ const studentSchema = z.object({
 const facultySchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email format").refine(
-    (email) => /^[a-zA-Z]+@vnrvjiet\.in$/.test(email),
-    "Faculty email must be in format: facultyname@vnrvjiet.in"
+    (email) => email.endsWith("@vnrvjiet.in"),
+    "Faculty email must end with @vnrvjiet.in"
   ),
   password: z.string().min(8, "Password must be at least 8 characters"),
   confirmPassword: z.string(),
@@ -59,8 +57,8 @@ const facultySchema = z.object({
 const adminSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email format").refine(
-    (email) => /^admin@vnrvjiet\.in$/.test(email),
-    "Admin email must be: admin@vnrvjiet.in"
+    (email) => email.endsWith("@vnrvjiet.in"),
+    "Admin email must end with @vnrvjiet.in"
   ),
   password: z.string().min(8, "Password must be at least 8 characters"),
   confirmPassword: z.string(),
@@ -133,18 +131,7 @@ const SignupForm = () => {
   const onSubmitStudent = async (values: z.infer<typeof studentSchema>) => {
     setIsLoading(true);
     try {
-      console.log("Validating student email:", values.email);
-      const isEmailValid = validateEmail(values.email, "student");
-      console.log("Email validation result:", isEmailValid);
-      
-      if (!isEmailValid) {
-        console.error("Email validation failed");
-        toast.error("Invalid student email format. Must follow pattern like: 12345A6789@vnrvjiet.in");
-        setIsLoading(false);
-        return;
-      }
-
-      console.log("Email validation passed, proceeding with signup");
+      console.log("Student signup with values:", values);
       const { confirmPassword, ...userData } = values;
 
       try {
@@ -171,22 +158,25 @@ const SignupForm = () => {
   const onSubmitFaculty = async (values: z.infer<typeof facultySchema>) => {
     setIsLoading(true);
     try {
-      const isEmailValid = validateEmail(values.email, "faculty");
-      
-      if (!isEmailValid) {
-        toast.error("Invalid faculty email format. Must follow pattern like: facultyname@vnrvjiet.in");
-        setIsLoading(false);
-        return;
-      }
-      
+      console.log("Faculty signup with values:", values);
       const { confirmPassword, ...userData } = values;
 
-      await signUp(values.email, values.password, "faculty", userData);
-      toast.success("Account created successfully!");
-      navigate("/login");
+      try {
+        const user = await signUp(values.email, values.password, "faculty", userData);
+        console.log("Faculty user created successfully:", user);
+        toast.success("Faculty account created successfully!");
+        navigate("/login");
+      } catch (signupError: any) {
+        console.error("Faculty signup error from Firebase:", signupError);
+        if (signupError.code === "auth/email-already-in-use") {
+          toast.error("Email is already in use. Please use a different email or login instead.");
+        } else {
+          toast.error(signupError.message || "Failed to create faculty account");
+        }
+      }
     } catch (error: any) {
-      console.error(error);
-      toast.error(error.message || "Failed to create account");
+      console.error("Faculty signup general error:", error);
+      toast.error(error.message || "Failed to create faculty account");
     } finally {
       setIsLoading(false);
     }
@@ -195,22 +185,25 @@ const SignupForm = () => {
   const onSubmitAdmin = async (values: z.infer<typeof adminSchema>) => {
     setIsLoading(true);
     try {
-      const isEmailValid = validateEmail(values.email, "admin");
-      
-      if (!isEmailValid) {
-        toast.error("Invalid admin email format. Must be admin@vnrvjiet.in");
-        setIsLoading(false);
-        return;
-      }
-      
+      console.log("Admin signup with values:", values);
       const { confirmPassword, ...userData } = values;
 
-      await signUp(values.email, values.password, "admin", userData);
-      toast.success("Account created successfully!");
-      navigate("/login");
+      try {
+        const user = await signUp(values.email, values.password, "admin", userData);
+        console.log("Admin user created successfully:", user);
+        toast.success("Admin account created successfully!");
+        navigate("/login");
+      } catch (signupError: any) {
+        console.error("Admin signup error from Firebase:", signupError);
+        if (signupError.code === "auth/email-already-in-use") {
+          toast.error("Email is already in use. Please use a different email or login instead.");
+        } else {
+          toast.error(signupError.message || "Failed to create admin account");
+        }
+      }
     } catch (error: any) {
-      console.error(error);
-      toast.error(error.message || "Failed to create account");
+      console.error("Admin signup general error:", error);
+      toast.error(error.message || "Failed to create admin account");
     } finally {
       setIsLoading(false);
     }

@@ -22,6 +22,40 @@ interface AchievementReviewCardProps {
   onStatusUpdate: () => void;
 }
 
+// Fix the achievement rendering to properly handle the Achievement type
+const renderAchievementSection = (
+  achievements: Achievement[],
+  title: string,
+  description: string,
+  emptyMessage: string,
+  onStatusUpdate: () => void
+) => {
+  return (
+    <div className="space-y-4">
+      <h2 className="text-2xl font-bold text-gray-800">{title}</h2>
+      <p className="text-gray-500">{description}</p>
+      
+      {achievements.length === 0 ? (
+        <Card className="bg-gray-50">
+          <CardContent className="p-6 text-center text-gray-500">
+            {emptyMessage}
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {achievements.map((achievement) => (
+            <AchievementReviewCard 
+              key={achievement.id} 
+              achievement={achievement}
+              onStatusUpdate={onStatusUpdate}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const FacultyDashboardPage = () => {
   const { user } = useAuth();
   const [achievements, setAchievements] = useState<Achievement[]>([]);
@@ -413,25 +447,21 @@ const FacultyDashboardPage = () => {
               <p className="mt-4">Loading achievements...</p>
             </div>
           ) : pendingAchievements.length > 0 ? (
-            <div className="grid md:grid-cols-2 gap-4">
-              {pendingAchievements.map((achievement) => (
-                <AchievementReviewCard 
-                  key={achievement.id} 
-                  achievement={achievement as Achievement}
-                  onStatusUpdate={fetchAchievements}
-                />
-              ))}
-            </div>
+            renderAchievementSection(
+              pendingAchievements,
+              "Pending Achievements",
+              "View all pending achievements",
+              "No pending achievements to display",
+              fetchAchievements
+            )
           ) : (
-            <div className="text-center p-8 bg-white rounded-lg shadow">
-              <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium">No pending achievements</h3>
-              <p className="text-gray-500">
-                {achievements.length > 0 
-                  ? "No pending achievements match your current filter criteria." 
-                  : "All achievements have been reviewed."}
-              </p>
-            </div>
+            renderAchievementSection(
+              pendingAchievements,
+              "Pending Achievements",
+              "View all pending achievements",
+              "No pending achievements to display",
+              fetchAchievements
+            )
           )}
         </TabsContent>
             
@@ -442,25 +472,21 @@ const FacultyDashboardPage = () => {
               <p className="mt-4">Loading achievements...</p>
             </div>
           ) : approvedAchievements.length > 0 ? (
-            <div className="grid md:grid-cols-2 gap-4">
-              {approvedAchievements.map((achievement) => (
-                <AchievementReviewCard 
-                  key={achievement.id} 
-                  achievement={achievement as Achievement}
-                  onStatusUpdate={fetchAchievements}
-                />
-              ))}
-            </div>
+            renderAchievementSection(
+              approvedAchievements,
+              "Approved Achievements",
+              "View all approved achievements",
+              "No approved achievements to display",
+              fetchAchievements
+            )
           ) : (
-            <div className="text-center p-8 bg-white rounded-lg shadow">
-              <CheckCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium">No approved achievements</h3>
-              <p className="text-gray-500">
-                {achievements.length > 0 
-                  ? "No approved achievements match your current filter criteria." 
-                  : "You haven't approved any achievements yet."}
-              </p>
-            </div>
+            renderAchievementSection(
+              approvedAchievements,
+              "Approved Achievements",
+              "View all approved achievements",
+              "No approved achievements to display",
+              fetchAchievements
+            )
           )}
         </TabsContent>
             
@@ -471,25 +497,21 @@ const FacultyDashboardPage = () => {
               <p className="mt-4">Loading achievements...</p>
             </div>
           ) : rejectedAchievements.length > 0 ? (
-            <div className="grid md:grid-cols-2 gap-4">
-              {rejectedAchievements.map((achievement) => (
-                <AchievementReviewCard 
-                  key={achievement.id} 
-                  achievement={achievement as Achievement}
-                  onStatusUpdate={fetchAchievements}
-                />
-              ))}
-            </div>
+            renderAchievementSection(
+              rejectedAchievements,
+              "Rejected Achievements",
+              "View all rejected achievements",
+              "No rejected achievements to display",
+              fetchAchievements
+            )
           ) : (
-            <div className="text-center p-8 bg-white rounded-lg shadow">
-              <XCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium">No rejected achievements</h3>
-              <p className="text-gray-500">
-                {achievements.length > 0 
-                  ? "No rejected achievements match your current filter criteria." 
-                  : "You haven't rejected any achievements."}
-              </p>
-            </div>
+            renderAchievementSection(
+              rejectedAchievements,
+              "Rejected Achievements",
+              "View all rejected achievements",
+              "No rejected achievements to display",
+              fetchAchievements
+            )
           )}
         </TabsContent>
             
