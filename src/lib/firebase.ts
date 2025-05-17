@@ -48,6 +48,23 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 
+// Email validation function
+export const validateEmail = (email: string, role: "student" | "faculty" | "admin"): boolean => {
+  // Different validation patterns based on role
+  if (role === "student") {
+    // Student emails must be in the format: 12345A6789@vnrvjiet.in
+    return /^\d{5}A\d{4}@vnrvjiet\.in$/.test(email);
+  } else if (role === "faculty") {
+    // Faculty emails must be in the format: facultyname@vnrvjiet.in
+    return /^[a-zA-Z]+@vnrvjiet\.in$/.test(email);
+  } else if (role === "admin") {
+    // Admin email is specifically: admin@vnrvjiet.in
+    return email === "admin@vnrvjiet.in";
+  }
+  
+  return false;
+};
+
 // Auth functions
 export const signIn = async (email: string, password: string) => {
   try {
@@ -59,7 +76,7 @@ export const signIn = async (email: string, password: string) => {
   }
 };
 
-export const signUp = async (email: string, password: string, userData: any) => {
+export const signUp = async (email: string, password: string, role: "student" | "faculty" | "admin", userData: any) => {
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
@@ -68,7 +85,8 @@ export const signUp = async (email: string, password: string, userData: any) => 
     await setDoc(doc(db, "users", user.uid), {
       ...userData,
       createdAt: serverTimestamp(),
-      email: email
+      email: email,
+      role: role
     });
 
     // Update display name

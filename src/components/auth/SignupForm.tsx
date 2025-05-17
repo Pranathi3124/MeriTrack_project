@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -170,6 +171,14 @@ const SignupForm = () => {
   const onSubmitFaculty = async (values: z.infer<typeof facultySchema>) => {
     setIsLoading(true);
     try {
+      const isEmailValid = validateEmail(values.email, "faculty");
+      
+      if (!isEmailValid) {
+        toast.error("Invalid faculty email format. Must follow pattern like: facultyname@vnrvjiet.in");
+        setIsLoading(false);
+        return;
+      }
+      
       const { confirmPassword, ...userData } = values;
 
       await signUp(values.email, values.password, "faculty", userData);
@@ -186,6 +195,14 @@ const SignupForm = () => {
   const onSubmitAdmin = async (values: z.infer<typeof adminSchema>) => {
     setIsLoading(true);
     try {
+      const isEmailValid = validateEmail(values.email, "admin");
+      
+      if (!isEmailValid) {
+        toast.error("Invalid admin email format. Must be admin@vnrvjiet.in");
+        setIsLoading(false);
+        return;
+      }
+      
       const { confirmPassword, ...userData } = values;
 
       await signUp(values.email, values.password, "admin", userData);
