@@ -21,7 +21,6 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Eye, EyeOff } from "lucide-react";
 import { Link } from "react-router-dom";
-import Logo from "@/components/Logo";
 
 const studentSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -214,9 +213,6 @@ const SignupForm = () => {
     <div className="min-h-screen flex items-center justify-center bg-white px-4 py-12">
       <Card className="w-full max-w-xl border-t-4 border-t-college-maroon shadow-lg animate-fade-in">
         <CardHeader className="space-y-2 text-center">
-          <div className="flex justify-center mb-4 animate-scale-in">
-            <Logo className="mx-auto" />
-          </div>
           <CardTitle className="text-2xl font-bold text-college-gray animate-slide-in-right">Create Account</CardTitle>
           <CardDescription className="animate-fade-in">
             Fill in your details to create your account
