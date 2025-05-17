@@ -21,6 +21,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Eye, EyeOff } from "lucide-react";
 import { Link } from "react-router-dom";
+import Logo from "@/components/Logo";
 
 const studentSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),

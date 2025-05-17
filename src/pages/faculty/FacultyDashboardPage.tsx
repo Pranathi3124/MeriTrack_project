@@ -16,7 +16,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { format, addDays } from "date-fns";
 import { cn } from "@/lib/utils";
 
-// Define the Achievement type expected by AchievementReviewCard
+// Define the Achievement type expected by AchievementReviewCard 
+// This type already exists in firebase.ts, so we're using that imported type
 interface AchievementReviewCardProps {
   achievement: Achievement;
   onStatusUpdate: () => void;
@@ -46,7 +47,7 @@ const renderAchievementSection = (
           {achievements.map((achievement) => (
             <AchievementReviewCard 
               key={achievement.id} 
-              achievement={achievement}
+              achievement={achievement as any}
               onStatusUpdate={onStatusUpdate}
             />
           ))}
