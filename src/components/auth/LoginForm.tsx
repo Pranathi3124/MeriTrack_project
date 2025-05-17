@@ -52,7 +52,7 @@ const LoginForm = () => {
       // Get user profile from Firestore to determine role
       const userProfile = await getUserProfile(userCredential.uid);
       
-      if (userProfile && userProfile.role) {
+      if (userProfile && typeof userProfile === 'object' && 'role' in userProfile) {
         const userRole = userProfile.role;
         
         toast.success("Login successful!");
@@ -79,7 +79,7 @@ const LoginForm = () => {
       console.error("Login error:", error);
       
       // Provide more specific error messages
-      if (error.code === 'auth/missing-permissions' || error.code === 'permission-denied') {
+      if (error.code === 'auth/missing-permissions' || error.code === 'auth/permission-denied') {
         toast.error("Authentication error: Missing or insufficient permissions. Please contact support.");
       } else if (error.code === 'auth/user-not-found') {
         toast.error("No account found with this email address.");

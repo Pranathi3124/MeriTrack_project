@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { getAllAchievements, Achievement } from "@/lib/firebase";
+import { getAllAchievements, Achievement, Timestamp } from "@/lib/firebase";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -418,7 +417,7 @@ const FacultyDashboardPage = () => {
               {pendingAchievements.map((achievement) => (
                 <AchievementReviewCard 
                   key={achievement.id} 
-                  achievement={achievement}
+                  achievement={achievement as Achievement}
                   onStatusUpdate={fetchAchievements}
                 />
               ))}
@@ -447,7 +446,7 @@ const FacultyDashboardPage = () => {
               {approvedAchievements.map((achievement) => (
                 <AchievementReviewCard 
                   key={achievement.id} 
-                  achievement={achievement}
+                  achievement={achievement as Achievement}
                   onStatusUpdate={fetchAchievements}
                 />
               ))}
@@ -476,7 +475,7 @@ const FacultyDashboardPage = () => {
               {rejectedAchievements.map((achievement) => (
                 <AchievementReviewCard 
                   key={achievement.id} 
-                  achievement={achievement}
+                  achievement={achievement as Achievement}
                   onStatusUpdate={fetchAchievements}
                 />
               ))}

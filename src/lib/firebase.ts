@@ -1,4 +1,3 @@
-
 // Import the necessary firebase modules
 import { initializeApp } from "firebase/app";
 import {
@@ -75,6 +74,20 @@ export interface Achievement {
   reviewedBy?: string;
   reviewedAt?: Date | Timestamp;
   createdAt: Date | Timestamp;
+}
+
+// User profile type
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  branch?: string;
+  year?: string;
+  rollNo?: string;
+  mobileNo?: string;
+  photoURL?: string;
+  [key: string]: any;
 }
 
 // Email validation function
@@ -164,13 +177,17 @@ export const changePassword = async (user: FirebaseUser, newPassword: string) =>
 };
 
 // User functions
-export const getUserProfile = async (userId: string) => {
+export const getUserProfile = async (userId: string): Promise<UserProfile | null> => {
   try {
     const userDoc = await getDoc(doc(db, "users", userId));
     if (userDoc.exists()) {
+      const data = userDoc.data() as DocumentData;
       return {
         id: userId,
-        ...userDoc.data()
+        ...data,
+        createdAt: data.createdAt instanceof Timestamp 
+          ? data.createdAt.toDate() 
+          : data.createdAt
       };
     }
     return null;
@@ -240,7 +257,7 @@ export const getAllUsers = async (filterRole?: UserRole) => {
     const users: any[] = [];
     
     querySnapshot.forEach((doc) => {
-      const data = doc.data();
+      const data = doc.data() as DocumentData;
       users.push({
         id: doc.id,
         ...data,
