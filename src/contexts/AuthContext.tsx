@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { onAuthStateChanged, User } from "firebase/auth";
 import { auth, db, getUserProfile } from "@/lib/firebase";
 import { doc, onSnapshot } from "firebase/firestore";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 
 export type UserData = {
   id: string;
@@ -33,17 +33,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
+    let unsubscribeSnapshot: (() => void) | undefined;
+    
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       setUser(user);
-      setLoading(false);
-
+      
+      // Clean up any existing Firestore subscription before setting up a new one or clearing user data
+      if (unsubscribeSnapshot) {
+        unsubscribeSnapshot();
+        unsubscribeSnapshot = undefined;
+      }
+      
       if (!user) {
+        // When logging out, clear user data without trying to fetch from Firestore
         setUserData(null);
+        setLoading(false);
         return;
       }
 
-      // Subscribe to user data in Firestore
-      const unsubscribeSnapshot = onSnapshot(
+      // Set up Firestore subscription only if we have a user
+      unsubscribeSnapshot = onSnapshot(
         doc(db, "users", user.uid),
         (doc) => {
           if (doc.exists()) {
@@ -54,23 +63,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           } else {
             setUserData(null);
             setError(new Error("User data not found"));
-            toast.error("User profile data not found.");
+            toast({
+              title: "Error loading profile data",
+              variant: "destructive",
+            });
           }
+          setLoading(false);
         },
         (error) => {
           console.error("Error fetching user data:", error);
           setError(error);
-          toast.error("Error loading profile data");
+          toast({
+            title: "Error loading profile data",
+            variant: "destructive",
+          });
+          setLoading(false);
         }
       );
-
-      return () => {
-        unsubscribeSnapshot();
-      };
     });
 
+    // Clean up both subscriptions when the component unmounts
     return () => {
       unsubscribeAuth();
+      if (unsubscribeSnapshot) {
+        unsubscribeSnapshot();
+      }
     };
   }, []);
 

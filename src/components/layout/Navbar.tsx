@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -12,7 +11,7 @@ import {
 import { LogOut, User as UserIcon, Settings } from "lucide-react";
 import { logOut } from "@/lib/firebase";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import Logo from "@/components/Logo";
 
 const Navbar = () => {
@@ -22,11 +21,16 @@ const Navbar = () => {
   const handleLogout = async () => {
     try {
       await logOut();
-      toast.success("Successfully logged out!");
+      toast({
+        title: "Successfully logged out!",
+      });
       navigate("/");
     } catch (error) {
       console.error(error);
-      toast.error("Failed to logout");
+      toast({
+        title: "Failed to logout",
+        variant: "destructive",
+      });
     }
   };
 
