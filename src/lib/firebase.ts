@@ -1,3 +1,4 @@
+
 // Import the necessary firebase modules
 import { initializeApp } from "firebase/app";
 import {
@@ -38,15 +39,14 @@ import {
 // Re-export Timestamp for use in other files
 export { Timestamp };
 
-// Modified Firebase configuration
-// Using a demo config - recommend replacing with actual config
+// Firebase configuration with user-provided credentials
 const firebaseConfig = {
-  apiKey: "AIzaSyC_MBEDVHmaBX_W9Sd3mbk3RuwlfOGZmUY",
-  authDomain: "meritrack-demo.firebaseapp.com",
-  projectId: "meritrack-demo",
-  storageBucket: "meritrack-demo.appspot.com",
-  messagingSenderId: "123456789012",
-  appId: "1:123456789012:web:abcdef1234567890"
+  apiKey: "AIzaSyA_rUD43zQX71_xLXSeouBOuXFZK71rAsU",
+  authDomain: "meritrack-be7bc.firebaseapp.com",
+  projectId: "meritrack-be7bc",
+  storageBucket: "meritrack-be7bc.firebasestorage.app",
+  messagingSenderId: "380802723240",
+  appId: "1:380802723240:web:26b5ac6ca1fbe16c8b819d"
 };
 
 // Initialize Firebase
