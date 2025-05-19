@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -44,6 +45,7 @@ const LoginForm = () => {
     
     try {
       console.log("Attempting to sign in with:", data.email);
+      
       // Sign in and get the user credential
       const userCredential = await signIn(data.email, data.password);
       
@@ -53,48 +55,63 @@ const LoginForm = () => {
 
       console.log("User authenticated successfully:", userCredential.uid);
 
-      // Get user profile from Firestore to determine role
-      const userProfile = await getUserProfile(userCredential.uid);
-      
-      if (userProfile && typeof userProfile === 'object' && 'role' in userProfile) {
-        const userRole = userProfile.role;
+      try {
+        // Get user profile from Firestore to determine role
+        const userProfile = await getUserProfile(userCredential.uid);
         
-        toast.success("Login successful!");
-        console.log("Redirecting user with role:", userRole);
-        
-        // Redirect based on user role
-        switch (userRole) {
-          case "student":
-            navigate("/student/dashboard");
-            break;
-          case "faculty":
-            navigate("/faculty/dashboard");
-            break;
-          case "admin":
-            navigate("/admin/dashboard");
-            break;
-          default:
-            navigate("/");
+        if (userProfile && typeof userProfile === 'object' && 'role' in userProfile) {
+          const userRole = userProfile.role;
+          
+          toast.success("Login successful!");
+          console.log("Redirecting user with role:", userRole);
+          
+          // Redirect based on user role
+          switch (userRole) {
+            case "student":
+              navigate("/student/dashboard");
+              break;
+            case "faculty":
+              navigate("/faculty/dashboard");
+              break;
+            case "admin":
+              navigate("/admin/dashboard");
+              break;
+            default:
+              navigate("/");
+          }
+        } else {
+          console.error("User profile not found or invalid:", userProfile);
+          toast.error("User profile not found or is invalid. Please contact support.");
+          setAuthError("Your user profile couldn't be loaded. Please contact an administrator.");
         }
-      } else {
-        console.error("User profile not found:", userProfile);
-        toast.error("User profile not found. Please contact support.");
+      } catch (profileError: any) {
+        console.error("Error fetching user profile:", profileError);
+        
+        // Handle profile fetch errors specifically
+        if (profileError.code === 'permission-denied' || profileError.code === 'auth/permission-denied') {
+          setAuthError("You don't have permission to access your profile data. Please contact an administrator.");
+          toast.error("Permission denied: Cannot access profile data");
+        } else {
+          setAuthError("Error loading profile data. Please try again later or contact support.");
+          toast.error("Error loading profile data");
+        }
       }
       
     } catch (error: any) {
       console.error("Login error:", error);
       
-      // Handle Firebase permission errors
+      // Handle Firebase permissions errors
       if (error.code === 'auth/missing-permissions' || error.code === 'auth/permission-denied' || error.code === 'permission-denied') {
-        const errorMessage = "Firebase authentication permissions error. Please ensure your Firebase project is properly configured with appropriate authentication rules.";
+        const errorMessage = "Firebase authentication permissions error. This usually means the Firebase Security Rules need to be updated. Please contact an administrator.";
         setAuthError(errorMessage);
         toast.error("Authentication error: Insufficient permissions");
       }
       // Handle Firebase API key errors
-      else if (error.code === 'auth/api-key-not-valid.-please-pass-a-valid-api-key.') {
-        const errorMessage = "Firebase API key is invalid. Please make sure you are using the correct API key in your Firebase configuration.";
+      else if (error.code === 'auth/api-key-not-valid.-please-pass-a-valid-api-key.' || 
+              error.message?.includes('API key')) {
+        const errorMessage = "Firebase API key is invalid or misconfigured. Please contact an administrator.";
         setAuthError(errorMessage);
-        toast.error("Authentication error: API key is not valid");
+        toast.error("Authentication error: API configuration issue");
       } 
       // Handle specific user errors
       else if (error.code === 'auth/user-not-found') {
