@@ -15,6 +15,8 @@ import { HelpCircle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getUserProfile } from "@/lib/firebase";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
 
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -27,6 +29,7 @@ const LoginForm = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [role, setRole] = useState<"student" | "faculty" | "admin">("student");
+  const [authError, setAuthError] = useState<string | null>(null);
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -38,6 +41,7 @@ const LoginForm = () => {
   
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
+    setAuthError(null);
     
     try {
       console.log("Attempting to sign in with:", data.email);
@@ -81,19 +85,29 @@ const LoginForm = () => {
     } catch (error: any) {
       console.error("Login error:", error);
       
-      // Provide more specific error messages
-      if (error.code === 'auth/api-key-not-valid.-please-pass-a-valid-api-key.') {
-        toast.error("Authentication error: API key is not valid. Please contact support.");
-      } else if (error.code === 'auth/missing-permissions' || error.code === 'auth/permission-denied') {
-        toast.error("Authentication error: Missing or insufficient permissions. Please contact support.");
-      } else if (error.code === 'auth/user-not-found') {
+      // Handle Firebase permission errors
+      if (error.code === 'auth/missing-permissions' || error.code === 'auth/permission-denied' || error.code === 'permission-denied') {
+        const errorMessage = "Firebase authentication permissions error. Please ensure your Firebase project is properly configured with appropriate authentication rules.";
+        setAuthError(errorMessage);
+        toast.error("Authentication error: Insufficient permissions");
+      }
+      // Handle Firebase API key errors
+      else if (error.code === 'auth/api-key-not-valid.-please-pass-a-valid-api-key.') {
+        const errorMessage = "Firebase API key is invalid. Please make sure you are using the correct API key in your Firebase configuration.";
+        setAuthError(errorMessage);
+        toast.error("Authentication error: API key is not valid");
+      } 
+      // Handle specific user errors
+      else if (error.code === 'auth/user-not-found') {
         toast.error("No account found with this email address.");
       } else if (error.code === 'auth/wrong-password') {
         toast.error("Incorrect password. Please try again.");
       } else if (error.code === 'auth/invalid-credential') {
         toast.error("Invalid credentials. Please check your email and password.");
       } else {
-        toast.error(error.message || "Failed to login. Please check your credentials.");
+        const errorMessage = error.message || "Failed to login. Please check your credentials.";
+        setAuthError(errorMessage);
+        toast.error("Login failed. Please try again.");
       }
     } finally {
       setIsSubmitting(false);
@@ -142,6 +156,16 @@ const LoginForm = () => {
         </CardHeader>
         
         <CardContent>
+          {authError && (
+            <Alert variant="destructive" className="mb-6">
+              <ExclamationTriangleIcon className="h-4 w-4" />
+              <AlertTitle>Authentication Error</AlertTitle>
+              <AlertDescription className="text-sm">
+                {authError}
+              </AlertDescription>
+            </Alert>
+          )}
+          
           <Tabs 
             defaultValue="student" 
             onValueChange={(value) => setRole(value as "student" | "faculty" | "admin")}
