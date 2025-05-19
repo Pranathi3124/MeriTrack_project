@@ -11,11 +11,9 @@ import * as z from "zod";
 import { signIn } from "@/lib/firebase";
 import { toast } from "sonner";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { motion } from "framer-motion";
-import { LogIn, HelpCircle } from "lucide-react";
+import { HelpCircle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getUserProfile } from "@/lib/firebase";
-import Logo from "@/components/Logo";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const formSchema = z.object({
@@ -42,12 +40,15 @@ const LoginForm = () => {
     setIsSubmitting(true);
     
     try {
+      console.log("Attempting to sign in with:", data.email);
       // Sign in and get the user credential
       const userCredential = await signIn(data.email, data.password);
       
       if (!userCredential || !userCredential.uid) {
         throw new Error("Failed to authenticate");
       }
+
+      console.log("User authenticated successfully:", userCredential.uid);
 
       // Get user profile from Firestore to determine role
       const userProfile = await getUserProfile(userCredential.uid);
@@ -56,6 +57,7 @@ const LoginForm = () => {
         const userRole = userProfile.role;
         
         toast.success("Login successful!");
+        console.log("Redirecting user with role:", userRole);
         
         // Redirect based on user role
         switch (userRole) {
@@ -72,6 +74,7 @@ const LoginForm = () => {
             navigate("/");
         }
       } else {
+        console.error("User profile not found:", userProfile);
         toast.error("User profile not found. Please contact support.");
       }
       
@@ -79,7 +82,9 @@ const LoginForm = () => {
       console.error("Login error:", error);
       
       // Provide more specific error messages
-      if (error.code === 'auth/missing-permissions' || error.code === 'auth/permission-denied') {
+      if (error.code === 'auth/api-key-not-valid.-please-pass-a-valid-api-key.') {
+        toast.error("Authentication error: API key is not valid. Please contact support.");
+      } else if (error.code === 'auth/missing-permissions' || error.code === 'auth/permission-denied') {
         toast.error("Authentication error: Missing or insufficient permissions. Please contact support.");
       } else if (error.code === 'auth/user-not-found') {
         toast.error("No account found with this email address.");
@@ -128,8 +133,7 @@ const LoginForm = () => {
       <Card className="w-full max-w-md border-t-4 border-t-college-maroon shadow-md">
         <CardHeader className="space-y-1 text-center pb-4">
           <div className="flex justify-center items-center mb-2">
-            <Logo className="h-16 w-auto" />
-            <h1 className="text-2xl font-bold text-college-maroon ml-2">MeriTrack</h1>
+            <h1 className="text-2xl font-bold text-college-maroon">MeriTrack</h1>
           </div>
           <CardTitle className="text-2xl font-bold">Sign In</CardTitle>
           <CardDescription>
