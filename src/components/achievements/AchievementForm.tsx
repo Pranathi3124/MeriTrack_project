@@ -19,8 +19,13 @@ import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-const AchievementForm = () => {
+interface AchievementFormProps {
+  onSuccess?: () => void;
+}
+
+const AchievementForm: React.FC<AchievementFormProps> = ({ onSuccess }) => {
   const { user, userData } = useAuth();
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState<AchievementCategory | "">("");
@@ -28,6 +33,7 @@ const AchievementForm = () => {
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [file, setFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,24 +60,34 @@ const AchievementForm = () => {
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !userData) return;
+    if (!user || !userData) {
+      setError("You must be logged in to submit an achievement");
+      toast.error("Authentication error");
+      return;
+    }
+    
+    setError(null);
     
     if (!title.trim()) {
+      setError("Please enter a title");
       toast.error("Please enter a title");
       return;
     }
     
     if (!category) {
+      setError("Please select a category");
       toast.error("Please select a category");
       return;
     }
     
     if (!date) {
+      setError("Please select a date");
       toast.error("Please select a date");
       return;
     }
     
     if (!file) {
+      setError("Please upload a document");
       toast.error("Please upload a document");
       return;
     }
@@ -79,6 +95,7 @@ const AchievementForm = () => {
     setIsSubmitting(true);
     
     try {
+      console.log("Adding achievement to database...");
       // Add achievement to database
       const achievementId = await addAchievement(user.uid, {
         title,
@@ -92,8 +109,13 @@ const AchievementForm = () => {
         studentEmail: userData.email
       });
       
+      console.log("Achievement added with ID:", achievementId);
+      console.log("Uploading document...");
+      
       // Upload achievement document
       await uploadAchievementDocument(achievementId, file);
+      
+      console.log("Document uploaded successfully");
       
       // Add audit log
       await addAuditLog("achievement_created", user.uid, { 
@@ -113,8 +135,23 @@ const AchievementForm = () => {
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
-    } catch (error) {
+      
+      // Notify parent component
+      if (onSuccess) {
+        onSuccess();
+      }
+    } catch (error: any) {
       console.error("Error submitting achievement:", error);
+      
+      let errorMessage = "Failed to submit achievement. Please try again later.";
+      
+      if (error.code === 'permission-denied') {
+        errorMessage = "You don't have permission to submit achievements. Please contact an administrator.";
+      } else if (error.message) {
+        errorMessage = `Error: ${error.message}`;
+      }
+      
+      setError(errorMessage);
       toast.error("Failed to submit achievement");
     } finally {
       setIsSubmitting(false);
@@ -128,6 +165,13 @@ const AchievementForm = () => {
         <CardDescription>Submit your achievements for faculty recognition</CardDescription>
       </CardHeader>
       <CardContent>
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="title">Title</Label>

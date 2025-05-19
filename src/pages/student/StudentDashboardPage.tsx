@@ -1,11 +1,12 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Medal, Award, TrendingUp, Clipboard, PlusCircle } from "lucide-react";
 import { getUserAchievements } from "@/lib/firebase";
+import { toast } from "sonner";
 import AchievementCard from "@/components/achievements/AchievementCard";
 import AchievementForm from "@/components/achievements/AchievementForm";
 
@@ -14,24 +15,41 @@ const StudentDashboardPage = () => {
   const [achievements, setAchievements] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAchievementForm, setShowAchievementForm] = useState(false);
+  const [selectedTab, setSelectedTab] = useState("all");
 
-  const fetchAchievements = async () => {
+  const fetchAchievements = useCallback(async () => {
     if (!user) return;
     
     setIsLoading(true);
     try {
+      console.log("Fetching achievements for user:", user.uid);
       const achievementsData = await getUserAchievements(user.uid);
+      console.log("Achievements fetched:", achievementsData.length);
       setAchievements(achievementsData);
     } catch (error) {
       console.error("Error fetching achievements:", error);
+      toast.error("Error loading achievements. Please try again.");
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
+    if (user) {
+      fetchAchievements();
+    }
+  }, [user, fetchAchievements]);
+
+  const handleAchievementSuccess = useCallback(() => {
+    // Close the form
+    setShowAchievementForm(false);
+    
+    // Refresh achievements
     fetchAchievements();
-  }, [user]);
+    
+    // Show success message
+    toast.success("Achievement submitted successfully! It will appear in your dashboard.");
+  }, [fetchAchievements]);
 
   const getStatusCount = (status: string) => {
     return achievements.filter(achievement => achievement.status === status).length;
@@ -109,12 +127,12 @@ const StudentDashboardPage = () => {
             <CardDescription>Fill in the details of your achievement</CardDescription>
           </CardHeader>
           <CardContent>
-            <AchievementForm />
+            <AchievementForm onSuccess={handleAchievementSuccess} />
           </CardContent>
         </Card>
       ) : null}
 
-      <Tabs defaultValue="all" className="space-y-4">
+      <Tabs defaultValue="all" value={selectedTab} onValueChange={setSelectedTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="all">All Achievements</TabsTrigger>
           <TabsTrigger value="academic">Academic</TabsTrigger>
@@ -128,7 +146,9 @@ const StudentDashboardPage = () => {
         {["all", "academic", "sports", "internships", "hackathon", "workshops", "co-curricular"].map((category) => (
           <TabsContent key={category} value={category} className="space-y-4">
             {isLoading ? (
-              <p>Loading achievements...</p>
+              <div className="flex justify-center items-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-college-maroon"></div>
+              </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {achievements
