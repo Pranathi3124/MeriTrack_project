@@ -12,7 +12,7 @@ import {
 import { LogOut, User as UserIcon, Settings } from "lucide-react";
 import { logOut } from "@/lib/firebase";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 import Logo from "@/components/Logo";
 
 const Navbar = () => {

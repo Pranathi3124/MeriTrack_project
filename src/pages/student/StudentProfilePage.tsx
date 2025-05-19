@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import StudentProfile from "@/components/profile/StudentProfile";
@@ -7,7 +6,7 @@ import { getUserAchievements } from "@/lib/firebase";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { User, ChartPie } from "lucide-react";
 import { motion } from "framer-motion";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 
 const StudentProfilePage = () => {
   const { userData, user } = useAuth();

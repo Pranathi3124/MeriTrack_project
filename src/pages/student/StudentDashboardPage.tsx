@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Medal, Award, TrendingUp, Clipboard, PlusCircle } from "lucide-react";
 import { getUserAchievements } from "@/lib/firebase";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 import AchievementCard from "@/components/achievements/AchievementCard";
 import AchievementForm from "@/components/achievements/AchievementForm";
 

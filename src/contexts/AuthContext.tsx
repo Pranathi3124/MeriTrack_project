@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { onAuthStateChanged, User } from "firebase/auth";
 import { auth, db, getUserProfile } from "@/lib/firebase";
 import { doc, onSnapshot } from "firebase/firestore";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 
 export type UserData = {
   id: string;
