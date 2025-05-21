@@ -1,356 +1,425 @@
 
-import React, { useState, useRef } from "react";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { toast } from "sonner";
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/contexts/AuthContext";
-import { 
-  AchievementCategory, 
-  AchievementLevel,
-  addAchievement, 
-  addAuditLog, 
-  uploadAchievementDocument 
-} from "@/lib/firebase";
-import { Calendar as CalendarIcon, Upload, FileX } from "lucide-react";
-import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Textarea } from "@/components/ui/textarea";
+import { addAchievement, uploadAchievementDocument } from "@/lib/firebase";
+import { toast } from "@/hooks/use-toast";
 
-interface AchievementFormProps {
-  onSuccess?: () => void;
-}
+// Define the schema for form validation
+const formSchema = z.object({
+  title: z.string().min(5, "Title must be at least 5 characters"),
+  category: z.string().min(1, "Please select a category"),
+  level: z.string().min(1, "Please select a level"),
+  description: z.string().min(10, "Description must be at least 10 characters"),
+  date: z.date({
+    required_error: "Please select a date",
+  }),
+  document: z.any().optional(),
+  semester: z.string().min(1, "Please select a semester"),
+  academicYear: z.string().min(1, "Please select an academic year"),
+  cgpa: z.string().optional(),
+  sgpa: z.string().optional(),
+});
+
+type AchievementFormProps = {
+  onSuccess: () => void;
+};
 
 const AchievementForm: React.FC<AchievementFormProps> = ({ onSuccess }) => {
   const { user, userData } = useAuth();
-  const [title, setTitle] = useState("");
-  const [category, setCategory] = useState<AchievementCategory | "">("");
-  const [level, setLevel] = useState<AchievementLevel | "">("");
-  const [description, setDescription] = useState("");
-  const [date, setDate] = useState<Date | undefined>(undefined);
-  const [file, setFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [documentFile, setDocumentFile] = useState<File | null>(null);
   
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-    
-    const selectedFile = e.target.files[0];
-    
-    // Validate file size (max 10MB)
-    if (selectedFile.size > 10 * 1024 * 1024) {
-      toast.error("File size should be less than 10MB");
-      e.target.value = "";
-      return;
+  // For conditional fields based on category
+  const [selectedCategory, setSelectedCategory] = useState("");
+
+  // Generate academic year options (last 4 years)
+  const currentYear = new Date().getFullYear();
+  const academicYears = [];
+  for (let i = 0; i < 4; i++) {
+    const year = currentYear - i;
+    academicYears.push(`${year}-${year + 1}`);
+  }
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: "",
+      category: "",
+      level: "",
+      description: "",
+      semester: "",
+      academicYear: academicYears[0],
+    },
+  });
+  
+  const watchCategory = form.watch("category");
+  
+  if (watchCategory !== selectedCategory) {
+    setSelectedCategory(watchCategory);
+  }
+
+  const handleDocumentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      setDocumentFile(files[0]);
     }
-    
-    setFile(selectedFile);
   };
-  
-  const removeFile = () => {
-    setFile(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-  
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user || !userData) {
-      setError("You must be logged in to submit an achievement");
-      toast.error("Authentication error");
-      return;
-    }
-    
-    setError(null);
-    
-    if (!title.trim()) {
-      setError("Please enter a title");
-      toast.error("Please enter a title");
-      return;
-    }
-    
-    if (!category) {
-      setError("Please select a category");
-      toast.error("Please select a category");
-      return;
-    }
-    
-    if (!level) {
-      setError("Please select achievement level");
-      toast.error("Please select achievement level");
-      return;
-    }
-    
-    if (!date) {
-      setError("Please select a date");
-      toast.error("Please select a date");
-      return;
-    }
-    
-    if (!file) {
-      setError("Please upload a document");
-      toast.error("Please upload a document");
-      return;
-    }
-    
-    setIsSubmitting(true);
-    
+
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    if (!user || !userData) return;
+
     try {
-      console.log("Adding achievement to database...");
+      setIsSubmitting(true);
+      
+      // Create achievement data
+      const achievementData = {
+        title: values.title,
+        category: values.category,
+        level: values.level,
+        description: values.description,
+        date: values.date,
+        semester: values.semester,
+        academicYear: values.academicYear,
+        studentName: userData.name || "",
+        studentEmail: userData.email || "",
+        rollNo: userData.rollNo || "",
+        branch: userData.branch || "",
+        year: userData.year || "",
+        status: "pending",
+      };
+      
+      // Add academic fields if category is academic
+      if (values.category === "academic") {
+        achievementData.cgpa = values.cgpa || "";
+        achievementData.sgpa = values.sgpa || "";
+      }
+      
       // Add achievement to database
-      const achievementId = await addAchievement(user.uid, {
-        title,
-        category,
-        level,
-        description,
-        date,
-        rollNo: userData.rollNo,
-        branch: userData.branch,
-        year: userData.year,
-        studentName: userData.name,
-        studentEmail: userData.email
-      });
+      const achievementId = await addAchievement(user.uid, achievementData);
       
-      console.log("Achievement added with ID:", achievementId);
-      console.log("Uploading document...");
-      
-      // Upload achievement document
-      await uploadAchievementDocument(achievementId, file);
-      
-      console.log("Document uploaded successfully");
-      
-      // Add audit log
-      await addAuditLog("achievement_created", user.uid, { 
-        achievementId, 
-        title, 
-        category 
-      });
+      // Upload document if provided
+      if (documentFile && achievementId) {
+        await uploadAchievementDocument(achievementId, documentFile);
+      }
       
       toast.success("Achievement submitted successfully!");
+      form.reset();
+      setDocumentFile(null);
+      onSuccess();
       
-      // Reset form
-      setTitle("");
-      setCategory("");
-      setLevel("");
-      setDescription("");
-      setDate(undefined);
-      setFile(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-      
-      // Notify parent component
-      if (onSuccess) {
-        onSuccess();
-      }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error submitting achievement:", error);
-      
-      let errorMessage = "Failed to submit achievement. Please try again later.";
-      
-      if (error.code === 'permission-denied') {
-        errorMessage = "You don't have permission to submit achievements. Please contact an administrator.";
-      } else if (error.message) {
-        errorMessage = `Error: ${error.message}`;
-      }
-      
-      setError(errorMessage);
-      toast.error("Failed to submit achievement");
+      toast.error("Failed to submit achievement. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
-  
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Add New Achievement</CardTitle>
-        <CardDescription>Submit your achievements for faculty recognition</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {error && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        {/* Title */}
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Achievement Title</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter achievement title" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        {/* Category */}
+        <FormField
+          control={form.control}
+          name="category"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Category</FormLabel>
+              <Select
+                onValueChange={(value) => {
+                  field.onChange(value);
+                  setSelectedCategory(value);
+                }}
+                defaultValue={field.value}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select achievement category" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="academic">Academic Excellence</SelectItem>
+                  <SelectItem value="technical">Technical Skills</SelectItem>
+                  <SelectItem value="research">Research & Projects</SelectItem>
+                  <SelectItem value="competition">Competitions</SelectItem>
+                  <SelectItem value="extra-curricular">Extra-Curricular</SelectItem>
+                  <SelectItem value="sports">Sports</SelectItem>
+                  <SelectItem value="internships">Internships</SelectItem>
+                  <SelectItem value="hackathon">Hackathons</SelectItem>
+                  <SelectItem value="workshops">Workshops</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        {/* Level - conditionally show different options for internships */}
+        <FormField
+          control={form.control}
+          name="level"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Achievement Level</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select achievement level" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {selectedCategory === "internships" ? (
+                    <>
+                      <SelectItem value="company">Company</SelectItem>
+                      <SelectItem value="startup">Startup</SelectItem>
+                      <SelectItem value="government">Government</SelectItem>
+                      <SelectItem value="research">Research Institution</SelectItem>
+                      <SelectItem value="international">International Organization</SelectItem>
+                    </>
+                  ) : (
+                    <>
+                      <SelectItem value="college">College Level</SelectItem>
+                      <SelectItem value="state">State/Regional Level</SelectItem>
+                      <SelectItem value="national">National Level</SelectItem>
+                      <SelectItem value="international">International Level</SelectItem>
+                    </>
+                  )}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        {/* Date */}
+        <FormField
+          control={form.control}
+          name="date"
+          render={({ field }) => (
+            <FormItem className="flex flex-col">
+              <FormLabel>Date of Achievement</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full pl-3 text-left font-normal",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      {field.value ? (
+                        format(field.value, "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    disabled={(date) =>
+                      date > new Date() || date < new Date("1900-01-01")
+                    }
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Semester */}
+        <FormField
+          control={form.control}
+          name="semester"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Semester</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select semester" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="1">1st Semester</SelectItem>
+                  <SelectItem value="2">2nd Semester</SelectItem>
+                  <SelectItem value="3">3rd Semester</SelectItem>
+                  <SelectItem value="4">4th Semester</SelectItem>
+                  <SelectItem value="5">5th Semester</SelectItem>
+                  <SelectItem value="6">6th Semester</SelectItem>
+                  <SelectItem value="7">7th Semester</SelectItem>
+                  <SelectItem value="8">8th Semester</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Academic Year */}
+        <FormField
+          control={form.control}
+          name="academicYear"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Academic Year</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select academic year" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {academicYears.map((year) => (
+                    <SelectItem key={year} value={year}>{year}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Conditional CGPA/SGPA fields for academic category */}
+        {selectedCategory === "academic" && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="cgpa"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>CGPA</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter your CGPA" {...field} />
+                  </FormControl>
+                  <FormDescription>Enter value between 0-10</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="sgpa"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>SGPA</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter your SGPA" {...field} />
+                  </FormControl>
+                  <FormDescription>Enter value between 0-10</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         )}
         
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
-            <Input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter achievement title"
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="category">Category</Label>
-            <Select
-              value={category}
-              onValueChange={(value) => setCategory(value as AchievementCategory)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="academic">Academic</SelectItem>
-                <SelectItem value="technical">Technical</SelectItem>
-                <SelectItem value="research">Research</SelectItem>
-                <SelectItem value="competition">Competitions</SelectItem>
-                <SelectItem value="extra-curricular">Extra-Curricular</SelectItem>
-                <SelectItem value="sports">Sports</SelectItem>
-                <SelectItem value="internships">Internships</SelectItem>
-                <SelectItem value="hackathon">Hackathon</SelectItem>
-                <SelectItem value="workshops">Workshops</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="level">Achievement Level</Label>
-            <Select
-              value={level}
-              onValueChange={(value) => setLevel(value as AchievementLevel)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select level" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="college">College/University</SelectItem>
-                <SelectItem value="state">State/Regional</SelectItem>
-                <SelectItem value="national">National</SelectItem>
-                <SelectItem value="international">International</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="date">Date of Achievement</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !date && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date ? format(date, "PPP") : "Select date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={setDate}
-                  initialFocus
-                  className={cn("p-3 pointer-events-auto")}
+        {/* Description */}
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Textarea 
+                  placeholder="Describe your achievement in detail" 
+                  className="min-h-[120px]"
+                  {...field} 
                 />
-              </PopoverContent>
-            </Popover>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe your achievement"
-              rows={4}
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="document">Upload Document</Label>
-            <div className="mt-1">
-              {!file && (
-                <div className="border-2 border-dashed border-gray-300 rounded-md p-6">
-                  <div className="flex flex-col items-center">
-                    <Upload className="h-8 w-8 text-gray-400" />
-                    <p className="mt-2 text-sm text-gray-500">
-                      Click to upload or drag and drop
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      PDF, Images, or Documents (max 10MB)
-                    </p>
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      className="absolute h-full w-full opacity-0 cursor-pointer"
-                      onChange={handleFileChange}
-                    />
-                  </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        {/* Supporting Document */}
+        <FormField
+          control={form.control}
+          name="document"
+          render={() => (
+            <FormItem>
+              <FormLabel>Supporting Document (Optional)</FormLabel>
+              <FormControl>
+                <Input 
+                  type="file" 
+                  onChange={handleDocumentChange}
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                />
+              </FormControl>
+              <FormDescription>
+                Upload a certificate, screenshot, or any document to verify your achievement.
+                Max size: 5MB. Formats: PDF, DOC, DOCX, JPG, PNG.
+              </FormDescription>
+              <FormMessage />
+              {documentFile && (
+                <div className="text-sm text-gray-500">
+                  Selected file: {documentFile.name}
                 </div>
               )}
-              
-              {file && (
-                <div className="flex items-center justify-between p-3 border rounded-md">
-                  <div className="flex items-center space-x-2">
-                    <div className="flex-shrink-0 h-10 w-10 bg-gray-100 rounded-md flex items-center justify-center">
-                      <svg
-                        className="h-6 w-6 text-gray-500"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-                        />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium truncate max-w-xs">
-                        {file.name}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {(file.size / 1024 / 1024).toFixed(2)} MB
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={removeFile}
-                  >
-                    <FileX className="h-4 w-4" />
-                    <span className="sr-only">Remove file</span>
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
-          
-          <Button
-            type="submit"
-            className="w-full bg-college-maroon hover:bg-college-darkmaroon"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Submitting..." : "Submit Achievement"}
-          </Button>
-        </form>
-      </CardContent>
-      <CardFooter className="text-sm text-gray-500">
-        Your achievement will be reviewed by faculty.
-      </CardFooter>
-    </Card>
+            </FormItem>
+          )}
+        />
+        
+        <Button type="submit" className="w-full" disabled={isSubmitting}>
+          {isSubmitting ? "Submitting..." : "Submit Achievement"}
+        </Button>
+      </form>
+    </Form>
   );
 };
 

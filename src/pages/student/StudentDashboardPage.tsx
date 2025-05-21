@@ -55,6 +55,20 @@ const StudentDashboardPage = () => {
     return achievements.filter(achievement => achievement.status === status).length;
   };
 
+  // Categories array that matches the options in AchievementForm
+  const categories = [
+    { id: "all", label: "All Achievements" },
+    { id: "academic", label: "Academic" },
+    { id: "technical", label: "Technical" },
+    { id: "research", label: "Research" },
+    { id: "competition", label: "Competitions" },
+    { id: "extra-curricular", label: "Extra-Curricular" },
+    { id: "sports", label: "Sports" },
+    { id: "internships", label: "Internships" },
+    { id: "hackathon", label: "Hackathons" },
+    { id: "workshops", label: "Workshops" }
+  ];
+
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
@@ -134,20 +148,15 @@ const StudentDashboardPage = () => {
 
       <Tabs defaultValue="all" value={selectedTab} onValueChange={setSelectedTab} className="space-y-4">
         <TabsList className="flex flex-wrap">
-          <TabsTrigger value="all">All Achievements</TabsTrigger>
-          <TabsTrigger value="academic">Academic</TabsTrigger>
-          <TabsTrigger value="technical">Technical</TabsTrigger>
-          <TabsTrigger value="research">Research</TabsTrigger>
-          <TabsTrigger value="competition">Competitions</TabsTrigger>
-          <TabsTrigger value="extra-curricular">Extra-Curricular</TabsTrigger>
-          <TabsTrigger value="sports">Sports</TabsTrigger>
-          <TabsTrigger value="internships">Internships</TabsTrigger>
-          <TabsTrigger value="hackathon">Hackathons</TabsTrigger>
-          <TabsTrigger value="workshops">Workshops</TabsTrigger>
+          {categories.map((category) => (
+            <TabsTrigger key={category.id} value={category.id}>
+              {category.label}
+            </TabsTrigger>
+          ))}
         </TabsList>
         
-        {["all", "academic", "technical", "research", "competition", "extra-curricular", "sports", "internships", "hackathon", "workshops"].map((category) => (
-          <TabsContent key={category} value={category} className="space-y-4">
+        {categories.map((category) => (
+          <TabsContent key={category.id} value={category.id} className="space-y-4">
             {isLoading ? (
               <div className="flex justify-center items-center py-12">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-college-maroon"></div>
@@ -155,7 +164,7 @@ const StudentDashboardPage = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {achievements
-                  .filter(achievement => category === "all" || achievement.category === category)
+                  .filter(achievement => category.id === "all" || achievement.category === category.id)
                   .map((achievement) => (
                     <AchievementCard 
                       key={achievement.id}
@@ -166,7 +175,7 @@ const StudentDashboardPage = () => {
             )}
             
             {!isLoading && 
-              achievements.filter(achievement => category === "all" || achievement.category === category).length === 0 && (
+              achievements.filter(achievement => category.id === "all" || achievement.category === category.id).length === 0 && (
               <Card>
                 <CardContent className="py-8 text-center">
                   <p className="mb-4 text-gray-500">No achievements found in this category</p>

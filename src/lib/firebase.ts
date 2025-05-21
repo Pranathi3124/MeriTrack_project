@@ -63,14 +63,23 @@ export type AchievementCategory =
   | "technical" // Technical Certifications & Skills
   | "research" // Research Publications & Projects
   | "competition" // Competitions & Hackathons
-  | "extra-curricular"; // Extra-Curricular Activities
+  | "extra-curricular" // Extra-Curricular Activities
+  | "sports" // Sports achievements
+  | "internships" // Internship experiences
+  | "hackathon" // Hackathon participations 
+  | "workshops"; // Workshop participations
 
-// Achievement levels
+// Enhanced Achievement levels
 export type AchievementLevel = 
   | "college" // College/University level
   | "state" // State/Regional level
   | "national" // National level
-  | "international"; // International level
+  | "international" // International level
+  // Specific levels for internships
+  | "company" // Company internship
+  | "startup" // Startup internship
+  | "government" // Government internship
+  | "research"; // Research institution internship
 
 export type AchievementStatus = "pending" | "approved" | "rejected";
 
@@ -78,7 +87,7 @@ export interface Achievement {
   id: string;
   title: string;
   category: AchievementCategory;
-  level: AchievementLevel; // New field for achievement level
+  level: AchievementLevel;
   description: string;
   date: Date | Timestamp;
   userId: string;
@@ -93,6 +102,9 @@ export interface Achievement {
   reviewedBy?: string;
   reviewedAt?: Date | Timestamp;
   createdAt: Date | Timestamp;
+  // Academic specific fields
+  cgpa?: string;
+  sgpa?: string;
   // For analytics and reporting
   semester?: string;
   academicYear?: string;
@@ -593,11 +605,21 @@ export const getAchievementAnalytics = async (filters: any = {}) => {
     // Status distribution
     const statusData = countByField(achievements, 'status');
     
-    // Semester distribution if available
+    // Semester distribution
     const semesterData = countByField(achievements, 'semester');
     
-    // Academic year distribution if available
+    // Academic year distribution
     const academicYearData = countByField(achievements, 'academicYear');
+    
+    // Academic metrics (CGPA/SGPA trends)
+    const academicMetrics = achievements
+      .filter(a => a.category === 'academic' && (a.cgpa || a.sgpa))
+      .map(a => ({
+        semester: a.semester || 'Unknown',
+        cgpa: a.cgpa ? parseFloat(a.cgpa as string) : null,
+        sgpa: a.sgpa ? parseFloat(a.sgpa as string) : null,
+      }))
+      .sort((a, b) => Number(a.semester) - Number(b.semester));
     
     return {
       total: achievements.length,
@@ -607,7 +629,8 @@ export const getAchievementAnalytics = async (filters: any = {}) => {
       yearData,
       statusData,
       semesterData,
-      academicYearData
+      academicYearData,
+      academicMetrics
     };
   } catch (error) {
     console.error("Error generating achievement analytics:", error);

@@ -42,7 +42,7 @@ const AdminDashboardPage = () => {
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-3xl font-bold mb-8 text-college-gray">Admin Dashboard</h1>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Students</CardTitle>
@@ -86,7 +86,7 @@ const AdminDashboardPage = () => {
       </div>
       
       <Tabs defaultValue="student-management" className="space-y-4">
-        <TabsList>
+        <TabsList className="flex flex-wrap">
           <TabsTrigger value="student-management">Student Management</TabsTrigger>
           <TabsTrigger value="faculty-management">Faculty Management</TabsTrigger>
           <TabsTrigger value="audit-logs">Audit Logs</TabsTrigger>
