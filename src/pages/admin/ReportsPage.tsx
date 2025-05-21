@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { getAllAchievements } from "@/lib/firebase";
 import { toast } from "@/components/ui/use-toast";
+import { Badge } from "@/components/ui/badge"; // Added missing Badge import
 import AchievementAnalytics from "@/components/analytics/AchievementAnalytics";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 

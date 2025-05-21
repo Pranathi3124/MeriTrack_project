@@ -77,6 +77,7 @@ const AchievementReviewCard: React.FC<AchievementReviewCardProps> = ({ achieveme
   const categoryClass = getCategoryColor(achievement.category);
   const statusClass = getStatusColor(achievement.status);
   
+  // Handle date formatting with both Date and Timestamp types
   const formattedDate = achievement.date instanceof Date
     ? format(achievement.date, "PPP")
     : format(achievement.date.toDate(), "PPP");

@@ -11,6 +11,7 @@ import { getAllAchievements, Achievement } from "@/lib/firebase";
 import { toast } from "@/components/ui/use-toast";
 import AchievementReviewCard from "./AchievementReviewCard";
 import AchievementAnalytics from "../analytics/AchievementAnalytics";
+import { Timestamp } from "firebase/firestore";
 
 const FacultyAchievementDashboard = () => {
   const [achievements, setAchievements] = useState<Achievement[]>([]);
@@ -107,9 +108,16 @@ const FacultyAchievementDashboard = () => {
 
     // Create CSV rows
     const rows = filteredAchievements.map(a => {
-      const date = a.date instanceof Date 
-        ? a.date.toLocaleDateString() 
-        : new Date(a.date).toLocaleDateString();
+      // Handle date conversion properly
+      let formattedDate = '';
+      if (a.date instanceof Date) {
+        formattedDate = a.date.toLocaleDateString();
+      } else if (a.date instanceof Timestamp) {
+        formattedDate = a.date.toDate().toLocaleDateString();
+      } else if (a.date) {
+        // Try to convert from string or number if needed
+        formattedDate = new Date(a.date).toLocaleDateString();
+      }
       
       return [
         `"${a.title.replace(/"/g, '""')}"`,
@@ -118,7 +126,7 @@ const FacultyAchievementDashboard = () => {
         `"${a.studentName}"`,
         a.branch,
         a.year,
-        date,
+        formattedDate,
         a.status,
         `"${a.description?.replace(/"/g, '""') || ''}"`
       ].join(',');
@@ -301,8 +309,27 @@ const FacultyAchievementDashboard = () => {
                 filteredAchievements.map((achievement) => (
                   <AchievementReviewCard 
                     key={achievement.id} 
-                    achievement={achievement}
-                    onStatusChange={fetchAchievements} 
+                    achievement={{
+                      id: achievement.id,
+                      title: achievement.title,
+                      category: achievement.category,
+                      description: achievement.description,
+                      date: achievement.date,
+                      documentURL: achievement.documentUrl,
+                      documentName: achievement.documentUrl?.split('/').pop() || '',
+                      status: achievement.status,
+                      createdAt: achievement.createdAt instanceof Timestamp 
+                        ? achievement.createdAt 
+                        : Timestamp.fromDate(achievement.createdAt instanceof Date 
+                            ? achievement.createdAt 
+                            : new Date()),
+                      studentName: achievement.studentName,
+                      studentEmail: achievement.studentEmail,
+                      rollNo: achievement.rollNo,
+                      branch: achievement.branch,
+                      year: achievement.year
+                    }}
+                    onStatusUpdate={fetchAchievements} 
                   />
                 ))
               ) : (
