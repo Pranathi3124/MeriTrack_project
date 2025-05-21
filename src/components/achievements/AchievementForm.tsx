@@ -103,7 +103,23 @@ const AchievementForm: React.FC<AchievementFormProps> = ({ onSuccess }) => {
       setIsSubmitting(true);
       
       // Create achievement data
-      const achievementData = {
+      const achievementData: {
+        title: string;
+        category: string;
+        level: string;
+        description: string;
+        date: Date;
+        semester: string;
+        academicYear: string;
+        studentName: string;
+        studentEmail: string;
+        rollNo: string;
+        branch: string;
+        year: string;
+        status: string;
+        cgpa?: string;
+        sgpa?: string;
+      } = {
         title: values.title,
         category: values.category,
         level: values.level,

@@ -86,7 +86,7 @@ const AdminDashboardPage = () => {
       </div>
       
       <Tabs defaultValue="student-management" className="space-y-4">
-        <TabsList className="flex flex-wrap">
+        <TabsList className="flex flex-wrap gap-2">
           <TabsTrigger value="student-management">Student Management</TabsTrigger>
           <TabsTrigger value="faculty-management">Faculty Management</TabsTrigger>
           <TabsTrigger value="audit-logs">Audit Logs</TabsTrigger>
@@ -123,34 +123,36 @@ const AdminDashboardPage = () => {
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-college-maroon"></div>
                 </div>
               ) : auditLogs.length > 0 ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Action</TableHead>
-                      <TableHead>User</TableHead>
-                      <TableHead>Timestamp</TableHead>
-                      <TableHead>Details</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {auditLogs.map((log) => (
-                      <TableRow key={log.id}>
-                        <TableCell>{log.action}</TableCell>
-                        <TableCell>{log.userId}</TableCell>
-                        <TableCell>
-                          {log.timestamp && log.timestamp.toDate ? 
-                            format(log.timestamp.toDate(), 'MMM dd, yyyy HH:mm') : 
-                            'N/A'}
-                        </TableCell>
-                        <TableCell className="max-w-xs truncate">
-                          {typeof log.details === 'object' ? 
-                            JSON.stringify(log.details).substring(0, 50) + '...' : 
-                            String(log.details).substring(0, 50)}
-                        </TableCell>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Action</TableHead>
+                        <TableHead>User</TableHead>
+                        <TableHead>Timestamp</TableHead>
+                        <TableHead>Details</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {auditLogs.map((log) => (
+                        <TableRow key={log.id}>
+                          <TableCell>{log.action}</TableCell>
+                          <TableCell>{log.userId}</TableCell>
+                          <TableCell>
+                            {log.timestamp && log.timestamp.toDate ? 
+                              format(log.timestamp.toDate(), 'MMM dd, yyyy HH:mm') : 
+                              'N/A'}
+                          </TableCell>
+                          <TableCell className="max-w-xs truncate">
+                            {typeof log.details === 'object' ? 
+                              JSON.stringify(log.details).substring(0, 50) + '...' : 
+                              String(log.details).substring(0, 50)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               ) : (
                 <div className="text-center p-6">
                   <FileText className="mx-auto h-12 w-12 text-gray-400" />
