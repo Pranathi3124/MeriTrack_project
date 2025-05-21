@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { 
   AchievementCategory, 
+  AchievementLevel,
   addAchievement, 
   addAuditLog, 
   uploadAchievementDocument 
@@ -28,6 +30,7 @@ const AchievementForm: React.FC<AchievementFormProps> = ({ onSuccess }) => {
   const { user, userData } = useAuth();
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState<AchievementCategory | "">("");
+  const [level, setLevel] = useState<AchievementLevel | "">("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [file, setFile] = useState<File | null>(null);
@@ -79,6 +82,12 @@ const AchievementForm: React.FC<AchievementFormProps> = ({ onSuccess }) => {
       return;
     }
     
+    if (!level) {
+      setError("Please select achievement level");
+      toast.error("Please select achievement level");
+      return;
+    }
+    
     if (!date) {
       setError("Please select a date");
       toast.error("Please select a date");
@@ -99,6 +108,7 @@ const AchievementForm: React.FC<AchievementFormProps> = ({ onSuccess }) => {
       const achievementId = await addAchievement(user.uid, {
         title,
         category,
+        level,
         description,
         date,
         rollNo: userData.rollNo,
@@ -128,6 +138,7 @@ const AchievementForm: React.FC<AchievementFormProps> = ({ onSuccess }) => {
       // Reset form
       setTitle("");
       setCategory("");
+      setLevel("");
       setDescription("");
       setDate(undefined);
       setFile(null);
@@ -194,11 +205,32 @@ const AchievementForm: React.FC<AchievementFormProps> = ({ onSuccess }) => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="academic">Academic</SelectItem>
+                <SelectItem value="technical">Technical</SelectItem>
+                <SelectItem value="research">Research</SelectItem>
+                <SelectItem value="competition">Competitions</SelectItem>
+                <SelectItem value="extra-curricular">Extra-Curricular</SelectItem>
                 <SelectItem value="sports">Sports</SelectItem>
                 <SelectItem value="internships">Internships</SelectItem>
                 <SelectItem value="hackathon">Hackathon</SelectItem>
                 <SelectItem value="workshops">Workshops</SelectItem>
-                <SelectItem value="co-curricular">Co-curricular Activities</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="level">Achievement Level</Label>
+            <Select
+              value={level}
+              onValueChange={(value) => setLevel(value as AchievementLevel)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select level" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="college">College/University</SelectItem>
+                <SelectItem value="state">State/Regional</SelectItem>
+                <SelectItem value="national">National</SelectItem>
+                <SelectItem value="international">International</SelectItem>
               </SelectContent>
             </Select>
           </div>

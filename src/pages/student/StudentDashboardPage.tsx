@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -132,17 +133,20 @@ const StudentDashboardPage = () => {
       ) : null}
 
       <Tabs defaultValue="all" value={selectedTab} onValueChange={setSelectedTab} className="space-y-4">
-        <TabsList>
+        <TabsList className="flex flex-wrap">
           <TabsTrigger value="all">All Achievements</TabsTrigger>
           <TabsTrigger value="academic">Academic</TabsTrigger>
+          <TabsTrigger value="technical">Technical</TabsTrigger>
+          <TabsTrigger value="research">Research</TabsTrigger>
+          <TabsTrigger value="competition">Competitions</TabsTrigger>
+          <TabsTrigger value="extra-curricular">Extra-Curricular</TabsTrigger>
           <TabsTrigger value="sports">Sports</TabsTrigger>
           <TabsTrigger value="internships">Internships</TabsTrigger>
           <TabsTrigger value="hackathon">Hackathons</TabsTrigger>
           <TabsTrigger value="workshops">Workshops</TabsTrigger>
-          <TabsTrigger value="co-curricular">Co-Curricular</TabsTrigger>
         </TabsList>
         
-        {["all", "academic", "sports", "internships", "hackathon", "workshops", "co-curricular"].map((category) => (
+        {["all", "academic", "technical", "research", "competition", "extra-curricular", "sports", "internships", "hackathon", "workshops"].map((category) => (
           <TabsContent key={category} value={category} className="space-y-4">
             {isLoading ? (
               <div className="flex justify-center items-center py-12">
