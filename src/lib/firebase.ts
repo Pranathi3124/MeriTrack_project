@@ -1,4 +1,3 @@
-
 // Import the necessary firebase modules
 import { initializeApp } from "firebase/app";
 import {
@@ -57,13 +56,29 @@ export const storage = getStorage(app);
 
 // Type definitions
 export type UserRole = "student" | "faculty" | "admin";
-export type AchievementCategory = "academic" | "sports" | "internships" | "hackathon" | "workshops" | "co-curricular";
+
+// Enhanced achievement categories
+export type AchievementCategory = 
+  | "academic" // Academic Excellence (grades, scholarships, awards)
+  | "technical" // Technical Certifications & Skills
+  | "research" // Research Publications & Projects
+  | "competition" // Competitions & Hackathons
+  | "extra-curricular"; // Extra-Curricular Activities
+
+// Achievement levels
+export type AchievementLevel = 
+  | "college" // College/University level
+  | "state" // State/Regional level
+  | "national" // National level
+  | "international"; // International level
+
 export type AchievementStatus = "pending" | "approved" | "rejected";
 
 export interface Achievement {
   id: string;
   title: string;
   category: AchievementCategory;
+  level: AchievementLevel; // New field for achievement level
   description: string;
   date: Date | Timestamp;
   userId: string;
@@ -78,6 +93,9 @@ export interface Achievement {
   reviewedBy?: string;
   reviewedAt?: Date | Timestamp;
   createdAt: Date | Timestamp;
+  // For analytics and reporting
+  semester?: string;
+  academicYear?: string;
 }
 
 // User profile type
@@ -358,12 +376,24 @@ export const getAllAchievements = async (filters: any = {}) => {
       constraints.push(where("category", "==", filters.category));
     }
     
+    if (filters.level) {
+      constraints.push(where("level", "==", filters.level));
+    }
+    
     if (filters.branch) {
       constraints.push(where("branch", "==", filters.branch));
     }
     
     if (filters.year) {
       constraints.push(where("year", "==", filters.year));
+    }
+    
+    if (filters.semester) {
+      constraints.push(where("semester", "==", filters.semester));
+    }
+    
+    if (filters.academicYear) {
+      constraints.push(where("academicYear", "==", filters.academicYear));
     }
     
     // Always order by createdAt in descending order (newest first)
@@ -542,3 +572,65 @@ export const getAuditLogs = async (filters: any = {}) => {
     throw error;
   }
 };
+
+// New analytics functions
+export const getAchievementAnalytics = async (filters: any = {}) => {
+  try {
+    const achievements = await getAllAchievements(filters);
+    
+    // Category counts
+    const categoryData = countByField(achievements, 'category');
+    
+    // Level counts
+    const levelData = countByField(achievements, 'level');
+    
+    // Branch distribution
+    const branchData = countByField(achievements, 'branch');
+    
+    // Year distribution
+    const yearData = countByField(achievements, 'year');
+    
+    // Status distribution
+    const statusData = countByField(achievements, 'status');
+    
+    // Semester distribution if available
+    const semesterData = countByField(achievements, 'semester');
+    
+    // Academic year distribution if available
+    const academicYearData = countByField(achievements, 'academicYear');
+    
+    return {
+      total: achievements.length,
+      categoryData,
+      levelData,
+      branchData,
+      yearData,
+      statusData,
+      semesterData,
+      academicYearData
+    };
+  } catch (error) {
+    console.error("Error generating achievement analytics:", error);
+    throw error;
+  }
+};
+
+// Helper function to count achievements by a specific field
+const countByField = (achievements: Achievement[], field: keyof Achievement) => {
+  const counts: Record<string, number> = {};
+  
+  achievements.forEach(achievement => {
+    const value = achievement[field] as string;
+    if (value) {
+      counts[value] = (counts[value] || 0) + 1;
+    }
+  });
+  
+  return Object.entries(counts).map(([name, count]) => ({
+    name,
+    value: count,
+  }));
+};
+
+// Export the helper for use in components
+export { countByField };

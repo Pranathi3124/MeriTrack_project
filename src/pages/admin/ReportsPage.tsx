@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -5,21 +6,14 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend, Cell, Pie, PieChart } from "recharts";
 import { Download, Calendar as CalendarIcon, Filter } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { getAllAchievements } from "@/lib/firebase";
-import { toast } from "sonner";
-import { Timestamp } from "firebase/firestore";
-
-const COLORS = ['#8B0000', '#1E88E5', '#43A047', '#FB8C00', '#D81B60', '#8E24AA', '#3949AB', '#00ACC1'];
-const STATUS_COLORS = {
-  approved: '#43A047', // Green
-  pending: '#FB8C00',  // Orange
-  rejected: '#D81B60'  // Pink/Red
-};
+import { toast } from "@/components/ui/use-toast";
+import AchievementAnalytics from "@/components/analytics/AchievementAnalytics";
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const ReportsPage = () => {
   const { user } = useAuth();
@@ -29,25 +23,14 @@ const ReportsPage = () => {
     branch: "",
     year: "",
     category: "",
+    level: "",
     startDate: undefined as Date | undefined,
     endDate: undefined as Date | undefined
   });
   
-  // Generated data based on achievements
-  const [branchData, setBranchData] = useState<any[]>([]);
-  const [yearData, setYearData] = useState<any[]>([]);
-  const [categoryData, setCategoryData] = useState<any[]>([]);
-  const [statusData, setStatusData] = useState<any[]>([]);
-  
   useEffect(() => {
     fetchAchievements();
   }, []);
-  
-  useEffect(() => {
-    if (achievements.length > 0) {
-      processData();
-    }
-  }, [achievements]);
   
   const fetchAchievements = async () => {
     if (!user) return;
@@ -58,76 +41,13 @@ const ReportsPage = () => {
       setAchievements(achievementsData);
     } catch (error) {
       console.error("Error fetching achievements:", error);
-      toast.error("Failed to load achievements for reporting");
+      toast({
+        title: "Failed to load achievements for reporting",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
-  };
-  
-  const processData = () => {
-    // Process branch data
-    const branchCounts: Record<string, number> = {};
-    
-    // Process year data
-    const yearCounts: Record<string, number> = {};
-    
-    // Process category data
-    const categoryCounts: Record<string, number> = {};
-    
-    // Process status data
-    const statusCounts: Record<string, number> = {
-      approved: 0,
-      pending: 0,
-      rejected: 0
-    };
-    
-    achievements.forEach(achievement => {
-      // Branch counts
-      if (achievement.branch) {
-        branchCounts[achievement.branch] = (branchCounts[achievement.branch] || 0) + 1;
-      }
-      
-      // Year counts
-      if (achievement.year) {
-        yearCounts[achievement.year] = (yearCounts[achievement.year] || 0) + 1;
-      }
-      
-      // Category counts
-      if (achievement.category) {
-        categoryCounts[achievement.category] = (categoryCounts[achievement.category] || 0) + 1;
-      }
-      
-      // Status counts
-      if (achievement.status) {
-        statusCounts[achievement.status] = (statusCounts[achievement.status] || 0) + 1;
-      }
-    });
-    
-    // Convert to arrays for recharts
-    const branchDataArray = Object.entries(branchCounts).map(([branch, count]) => ({
-      name: branch,
-      value: count,
-    }));
-    
-    const yearDataArray = Object.entries(yearCounts).map(([year, count]) => ({
-      name: `Year ${year}`,
-      value: count,
-    }));
-    
-    const categoryDataArray = Object.entries(categoryCounts).map(([category, count]) => ({
-      name: category.charAt(0).toUpperCase() + category.slice(1).replace('-', ' '),
-      value: count,
-    }));
-    
-    const statusDataArray = Object.entries(statusCounts).map(([status, count]) => ({
-      name: status.charAt(0).toUpperCase() + status.slice(1),
-      value: count,
-    }));
-    
-    setBranchData(branchDataArray);
-    setYearData(yearDataArray);
-    setCategoryData(categoryDataArray);
-    setStatusData(statusDataArray);
   };
   
   const handleFilterChange = (name: string, value: string | Date | undefined) => {
@@ -143,6 +63,7 @@ const ReportsPage = () => {
       branch: "",
       year: "",
       category: "",
+      level: "",
       startDate: undefined,
       endDate: undefined
     });
@@ -159,7 +80,8 @@ const ReportsPage = () => {
     // Add headers
     csvRows.push([
       "Title", 
-      "Category", 
+      "Category",
+      "Level", 
       "Date", 
       "Status", 
       "Student Name", 
@@ -177,6 +99,7 @@ const ReportsPage = () => {
       csvRows.push([
         `"${achievement.title.replace(/"/g, '""')}"`,
         `"${achievement.category}"`,
+        `"${achievement.level || 'N/A'}"`,
         `"${date}"`,
         `"${achievement.status}"`,
         `"${achievement.studentName || ''}"`,
@@ -226,8 +149,8 @@ const ReportsPage = () => {
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <Card className="md:col-span-4 bg-white">
+      <div className="space-y-6">
+        <Card className="bg-white">
           <CardHeader className="pb-2">
             <CardTitle>Filter Reports</CardTitle>
             <CardDescription>Customize reports by applying filters</CardDescription>
@@ -244,7 +167,7 @@ const ReportsPage = () => {
                     <SelectValue placeholder="All branches" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All branches</SelectItem>
+                    <SelectItem value="">All branches</SelectItem>
                     <SelectItem value="CSE">Computer Science</SelectItem>
                     <SelectItem value="IT">Information Technology</SelectItem>
                     <SelectItem value="ECE">Electronics & Communication</SelectItem>
@@ -265,7 +188,7 @@ const ReportsPage = () => {
                     <SelectValue placeholder="All years" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All years</SelectItem>
+                    <SelectItem value="">All years</SelectItem>
                     <SelectItem value="1">1st Year</SelectItem>
                     <SelectItem value="2">2nd Year</SelectItem>
                     <SelectItem value="3">3rd Year</SelectItem>
@@ -284,67 +207,84 @@ const ReportsPage = () => {
                     <SelectValue placeholder="All categories" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All categories</SelectItem>
-                    <SelectItem value="academic">Academic</SelectItem>
-                    <SelectItem value="sports">Sports</SelectItem>
-                    <SelectItem value="internships">Internships</SelectItem>
-                    <SelectItem value="hackathon">Hackathon</SelectItem>
-                    <SelectItem value="workshops">Workshops</SelectItem>
-                    <SelectItem value="co-curricular">Co-curricular Activities</SelectItem>
+                    <SelectItem value="">All categories</SelectItem>
+                    <SelectItem value="academic">Academic Excellence</SelectItem>
+                    <SelectItem value="technical">Technical Skills</SelectItem>
+                    <SelectItem value="research">Research & Projects</SelectItem>
+                    <SelectItem value="competition">Competitions</SelectItem>
+                    <SelectItem value="extra-curricular">Extra-Curricular</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               
               <div className="space-y-2">
-                <Label>Start Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !filters.startDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {filters.startDate ? format(filters.startDate, "PPP") : "Pick a date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={filters.startDate}
-                      onSelect={(date) => handleFilterChange("startDate", date)}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
+                <Label>Level</Label>
+                <Select
+                  value={filters.level}
+                  onValueChange={(value) => handleFilterChange("level", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="All levels" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All levels</SelectItem>
+                    <SelectItem value="college">College Level</SelectItem>
+                    <SelectItem value="state">State/Regional Level</SelectItem>
+                    <SelectItem value="national">National Level</SelectItem>
+                    <SelectItem value="international">International Level</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               
               <div className="space-y-2">
-                <Label>End Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !filters.endDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {filters.endDate ? format(filters.endDate, "PPP") : "Pick a date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={filters.endDate}
-                      onSelect={(date) => handleFilterChange("endDate", date)}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
+                <Label>Date Range</Label>
+                <div className="flex gap-2">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !filters.startDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {filters.startDate ? format(filters.startDate, "PPP") : "Start date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={filters.startDate}
+                        onSelect={(date) => handleFilterChange("startDate", date)}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !filters.endDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {filters.endDate ? format(filters.endDate, "PPP") : "End date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={filters.endDate}
+                        onSelect={(date) => handleFilterChange("endDate", date)}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
               
               <div className="md:col-span-5 mt-2">
@@ -361,144 +301,91 @@ const ReportsPage = () => {
         </Card>
         
         {loading ? (
-          <div className="col-span-1 md:col-span-4 text-center py-12">
+          <div className="text-center py-12">
             <div className="w-12 h-12 border-4 border-t-college-maroon border-r-transparent border-b-college-maroon border-l-transparent rounded-full animate-spin mx-auto mb-4"></div>
             <p className="text-lg">Loading report data...</p>
           </div>
         ) : (
-          <>
-            <Card className="md:col-span-2 bg-white">
-              <CardHeader>
-                <CardTitle>Achievements by Branch</CardTitle>
-                <CardDescription>Distribution of achievements across departments</CardDescription>
-              </CardHeader>
-              <CardContent className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={branchData}>
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="value" name="Achievements">
-                      {branchData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
+          <div className="space-y-6">
+            <AchievementAnalytics achievements={achievements} />
             
-            <Card className="md:col-span-2 bg-white">
+            {/* Summary Table */}
+            <Card>
               <CardHeader>
-                <CardTitle>Achievements by Year</CardTitle>
-                <CardDescription>Distribution of achievements across academic years</CardDescription>
-              </CardHeader>
-              <CardContent className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={yearData}>
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="value" name="Achievements">
-                      {yearData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[(index + 3) % COLORS.length]} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-            
-            <Card className="md:col-span-2 bg-white">
-              <CardHeader>
-                <CardTitle>Achievements by Category</CardTitle>
-                <CardDescription>Distribution of achievements by category</CardDescription>
-              </CardHeader>
-              <CardContent className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={categoryData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                      outerRadius={80}
-                      fill="#8B0000"
-                      dataKey="value"
-                    >
-                      {categoryData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip formatter={(value) => [`${value} achievements`, "Count"]} />
-                    <Legend layout="vertical" verticalAlign="bottom" align="center" />
-                  </PieChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-            
-            <Card className="md:col-span-2 bg-white">
-              <CardHeader>
-                <CardTitle>Achievements by Status</CardTitle>
-                <CardDescription>Distribution of achievements by approval status</CardDescription>
-              </CardHeader>
-              <CardContent className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={statusData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                      outerRadius={80}
-                      fill="#8B0000"
-                      dataKey="value"
-                    >
-                      <Cell fill={STATUS_COLORS.approved} /> {/* Approved - Green */}
-                      <Cell fill={STATUS_COLORS.pending} /> {/* Pending - Orange */}
-                      <Cell fill={STATUS_COLORS.rejected} /> {/* Rejected - Red */}
-                    </Pie>
-                    <Tooltip formatter={(value) => [`${value} achievements`, "Count"]} />
-                    <Legend layout="vertical" verticalAlign="bottom" align="center" />
-                  </PieChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-            
-            <Card className="md:col-span-4 bg-white">
-              <CardHeader>
-                <CardTitle>Achievement Report Summary</CardTitle>
+                <CardTitle>Summary Table</CardTitle>
                 <CardDescription>
-                  Showing {achievements.length} achievements
+                  Detailed view of {achievements.length} achievements
                   {filters.branch ? ` for ${filters.branch} branch` : ""}
                   {filters.year ? ` in year ${filters.year}` : ""}
                   {filters.category ? ` in ${filters.category} category` : ""}
-                  {filters.startDate ? ` from ${format(filters.startDate, "PPP")}` : ""}
-                  {filters.endDate ? ` to ${format(filters.endDate, "PPP")}` : ""}
+                  {filters.level ? ` at ${filters.level} level` : ""}
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                  {categoryData.map((item, index) => (
-                    <div key={index} className="bg-white p-4 rounded-lg border">
-                      <div className="flex items-center mb-2">
-                        <div 
-                          className="h-3 w-3 rounded-full mr-2" 
-                          style={{ backgroundColor: COLORS[index % COLORS.length] }} 
-                        />
-                        <p className="text-sm font-medium">{item.name}</p>
-                      </div>
-                      <p className="text-2xl font-bold">{item.value}</p>
-                    </div>
-                  ))}
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableCaption>List of achievements based on applied filters</TableCaption>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Student</TableHead>
+                        <TableHead>Title</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Level</TableHead>
+                        <TableHead>Branch</TableHead>
+                        <TableHead>Year</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {achievements.slice(0, 10).map((achievement) => (
+                        <TableRow key={achievement.id}>
+                          <TableCell className="font-medium">{achievement.studentName}</TableCell>
+                          <TableCell>{achievement.title}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="capitalize">
+                              {achievement.category}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="capitalize">
+                              {achievement.level || "N/A"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{achievement.branch}</TableCell>
+                          <TableCell>{achievement.year}</TableCell>
+                          <TableCell>
+                            <Badge 
+                              className={cn(
+                                achievement.status === "approved" && "bg-green-100 text-green-800",
+                                achievement.status === "pending" && "bg-yellow-100 text-yellow-800",
+                                achievement.status === "rejected" && "bg-red-100 text-red-800"
+                              )}
+                            >
+                              {achievement.status}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                      {achievements.length > 10 && (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center text-muted-foreground">
+                            Showing 10 of {achievements.length} results. Download the CSV for full data.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                      {achievements.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center text-muted-foreground">
+                            No achievements found matching the filter criteria.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
                 </div>
               </CardContent>
             </Card>
-          </>
+          </div>
         )}
       </div>
     </div>
