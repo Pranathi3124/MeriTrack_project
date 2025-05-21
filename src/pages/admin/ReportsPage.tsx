@@ -21,10 +21,10 @@ const ReportsPage = () => {
   const [loading, setLoading] = useState(true);
   const [achievements, setAchievements] = useState<any[]>([]);
   const [filters, setFilters] = useState({
-    branch: "",
-    year: "",
-    category: "",
-    level: "",
+    branch: "all",
+    year: "all",
+    category: "all",
+    level: "all",
     startDate: undefined as Date | undefined,
     endDate: undefined as Date | undefined
   });
@@ -38,7 +38,16 @@ const ReportsPage = () => {
     
     setLoading(true);
     try {
-      const achievementsData = await getAllAchievements(filters);
+      // Convert "all" filter values to empty strings for the backend
+      const apiFilters = {
+        ...filters,
+        branch: filters.branch === "all" ? "" : filters.branch,
+        year: filters.year === "all" ? "" : filters.year,
+        category: filters.category === "all" ? "" : filters.category,
+        level: filters.level === "all" ? "" : filters.level,
+      };
+      
+      const achievementsData = await getAllAchievements(apiFilters);
       setAchievements(achievementsData);
     } catch (error) {
       console.error("Error fetching achievements:", error);
@@ -61,10 +70,10 @@ const ReportsPage = () => {
   
   const handleResetFilters = () => {
     setFilters({
-      branch: "",
-      year: "",
-      category: "",
-      level: "",
+      branch: "all",
+      year: "all",
+      category: "all",
+      level: "all",
       startDate: undefined,
       endDate: undefined
     });
@@ -168,7 +177,7 @@ const ReportsPage = () => {
                     <SelectValue placeholder="All branches" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All branches</SelectItem>
+                    <SelectItem value="all">All branches</SelectItem>
                     <SelectItem value="CSE">Computer Science</SelectItem>
                     <SelectItem value="IT">Information Technology</SelectItem>
                     <SelectItem value="ECE">Electronics & Communication</SelectItem>
@@ -189,7 +198,7 @@ const ReportsPage = () => {
                     <SelectValue placeholder="All years" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All years</SelectItem>
+                    <SelectItem value="all">All years</SelectItem>
                     <SelectItem value="1">1st Year</SelectItem>
                     <SelectItem value="2">2nd Year</SelectItem>
                     <SelectItem value="3">3rd Year</SelectItem>
@@ -208,7 +217,7 @@ const ReportsPage = () => {
                     <SelectValue placeholder="All categories" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All categories</SelectItem>
+                    <SelectItem value="all">All categories</SelectItem>
                     <SelectItem value="academic">Academic Excellence</SelectItem>
                     <SelectItem value="technical">Technical Skills</SelectItem>
                     <SelectItem value="research">Research & Projects</SelectItem>
@@ -228,7 +237,7 @@ const ReportsPage = () => {
                     <SelectValue placeholder="All levels" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All levels</SelectItem>
+                    <SelectItem value="all">All levels</SelectItem>
                     <SelectItem value="college">College Level</SelectItem>
                     <SelectItem value="state">State/Regional Level</SelectItem>
                     <SelectItem value="national">National Level</SelectItem>
@@ -316,10 +325,10 @@ const ReportsPage = () => {
                 <CardTitle>Summary Table</CardTitle>
                 <CardDescription>
                   Detailed view of {achievements.length} achievements
-                  {filters.branch ? ` for ${filters.branch} branch` : ""}
-                  {filters.year ? ` in year ${filters.year}` : ""}
-                  {filters.category ? ` in ${filters.category} category` : ""}
-                  {filters.level ? ` at ${filters.level} level` : ""}
+                  {filters.branch !== "all" ? ` for ${filters.branch} branch` : ""}
+                  {filters.year !== "all" ? ` in year ${filters.year}` : ""}
+                  {filters.category !== "all" ? ` in ${filters.category} category` : ""}
+                  {filters.level !== "all" ? ` at ${filters.level} level` : ""}
                 </CardDescription>
               </CardHeader>
               <CardContent>

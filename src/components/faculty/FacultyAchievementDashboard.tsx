@@ -18,11 +18,11 @@ const FacultyAchievementDashboard = () => {
   const [filteredAchievements, setFilteredAchievements] = useState<Achievement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState({
-    category: "",
-    level: "",
-    status: "",
-    branch: "",
-    year: ""
+    category: "all",
+    level: "all",
+    status: "all",
+    branch: "all",
+    year: "all"
   });
 
   useEffect(() => {
@@ -52,23 +52,23 @@ const FacultyAchievementDashboard = () => {
   const applyFilters = () => {
     let filtered = [...achievements];
 
-    if (filters.category) {
+    if (filters.category && filters.category !== "all") {
       filtered = filtered.filter(a => a.category === filters.category);
     }
 
-    if (filters.level) {
+    if (filters.level && filters.level !== "all") {
       filtered = filtered.filter(a => a.level === filters.level);
     }
 
-    if (filters.status) {
+    if (filters.status && filters.status !== "all") {
       filtered = filtered.filter(a => a.status === filters.status);
     }
 
-    if (filters.branch) {
+    if (filters.branch && filters.branch !== "all") {
       filtered = filtered.filter(a => a.branch === filters.branch);
     }
 
-    if (filters.year) {
+    if (filters.year && filters.year !== "all") {
       filtered = filtered.filter(a => a.year === filters.year);
     }
 
@@ -84,11 +84,11 @@ const FacultyAchievementDashboard = () => {
 
   const resetFilters = () => {
     setFilters({
-      category: "",
-      level: "",
-      status: "",
-      branch: "",
-      year: ""
+      category: "all",
+      level: "all",
+      status: "all",
+      branch: "all",
+      year: "all"
     });
   };
 
@@ -203,7 +203,7 @@ const FacultyAchievementDashboard = () => {
                       <SelectValue placeholder="All Categories" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Categories</SelectItem>
+                      <SelectItem value="all">All Categories</SelectItem>
                       <SelectItem value="academic">Academic Excellence</SelectItem>
                       <SelectItem value="technical">Technical Skills</SelectItem>
                       <SelectItem value="research">Research & Projects</SelectItem>
@@ -223,7 +223,7 @@ const FacultyAchievementDashboard = () => {
                       <SelectValue placeholder="All Levels" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Levels</SelectItem>
+                      <SelectItem value="all">All Levels</SelectItem>
                       <SelectItem value="college">College Level</SelectItem>
                       <SelectItem value="state">State/Regional Level</SelectItem>
                       <SelectItem value="national">National Level</SelectItem>
@@ -242,7 +242,7 @@ const FacultyAchievementDashboard = () => {
                       <SelectValue placeholder="All Statuses" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Statuses</SelectItem>
+                      <SelectItem value="all">All Statuses</SelectItem>
                       <SelectItem value="pending">Pending</SelectItem>
                       <SelectItem value="approved">Approved</SelectItem>
                       <SelectItem value="rejected">Rejected</SelectItem>
@@ -260,7 +260,7 @@ const FacultyAchievementDashboard = () => {
                       <SelectValue placeholder="All Branches" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Branches</SelectItem>
+                      <SelectItem value="all">All Branches</SelectItem>
                       <SelectItem value="CSE">Computer Science</SelectItem>
                       <SelectItem value="IT">Information Technology</SelectItem>
                       <SelectItem value="ECE">Electronics & Communication</SelectItem>
@@ -281,7 +281,7 @@ const FacultyAchievementDashboard = () => {
                       <SelectValue placeholder="All Years" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Years</SelectItem>
+                      <SelectItem value="all">All Years</SelectItem>
                       <SelectItem value="1">1st Year</SelectItem>
                       <SelectItem value="2">2nd Year</SelectItem>
                       <SelectItem value="3">3rd Year</SelectItem>
