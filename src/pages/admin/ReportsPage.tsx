@@ -582,7 +582,7 @@ const ReportsPage = () => {
                     <div className="bg-green-50 p-4 rounded-lg">
                       <h3 className="font-medium text-green-800">Top Performing Students</h3>
                       <p className="text-2xl font-bold">{achievements.filter(a => Number(a.cgpa) > 9.0).length}</p>
-                      <p className="text-sm text-green-700">Students with CGPA > 9.0</p>
+                      <p className="text-sm text-green-700">Students with CGPA {'>'} 9.0</p>
                     </div>
                     
                     <div className="bg-blue-50 p-4 rounded-lg">
