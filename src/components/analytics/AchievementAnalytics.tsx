@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
@@ -17,8 +16,7 @@ import {
   Line,
   Scatter,
   ScatterChart,
-  ZAxis,
-  Treemap
+  ZAxis
 } from "recharts";
 import { 
   BarChartHorizontal, 
@@ -30,7 +28,6 @@ import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 
 // Define types for achievement and props
 interface Achievement {
@@ -366,8 +363,8 @@ const AchievementAnalytics = ({ achievements }: AchievementAnalyticsProps) => {
                         data={categoryData}
                         cx="50%"
                         cy="50%"
-                        labelLine={false}
-                        outerRadius={100}
+                        labelLine={true}
+                        outerRadius={80}
                         fill="#8884d8"
                         dataKey="value"
                         nameKey="name"
@@ -382,7 +379,7 @@ const AchievementAnalytics = ({ achievements }: AchievementAnalyticsProps) => {
                           />
                         ))}
                       </Pie>
-                      <Tooltip />
+                      <Tooltip formatter={(value) => [`${value} achievements`, 'Count']} />
                     </RechartsPieChart>
                   </ResponsiveContainer>
                 </div>
@@ -463,8 +460,8 @@ const AchievementAnalytics = ({ achievements }: AchievementAnalyticsProps) => {
                         data={yearData}
                         cx="50%"
                         cy="50%"
-                        labelLine={false}
-                        outerRadius={100}
+                        labelLine={true}
+                        outerRadius={80}
                         fill="#8884d8"
                         dataKey="value"
                         nameKey="name"
@@ -479,7 +476,7 @@ const AchievementAnalytics = ({ achievements }: AchievementAnalyticsProps) => {
                           />
                         ))}
                       </Pie>
-                      <Tooltip />
+                      <Tooltip formatter={(value) => [`${value} achievements`, 'Count']} />
                     </RechartsPieChart>
                   </ResponsiveContainer>
                 </div>

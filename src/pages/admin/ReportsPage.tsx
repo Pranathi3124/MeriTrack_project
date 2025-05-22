@@ -149,31 +149,37 @@ const ReportsPage = () => {
       "Branch", 
       "Year",
       "Semester",
+      "Semester GPA", // Added SGPA as a separate column to make it clearer
       "Academic Year",
-      "CGPA",
-      "SGPA"
+      "CGPA"
     ].join(","));
     
     // Add row data
     achievements.forEach(achievement => {
-      const date = achievement.date instanceof Date
-        ? format(achievement.date, "yyyy-MM-dd")
-        : format(achievement.date.toDate(), "yyyy-MM-dd");
+      // Format date properly or use N/A if not available
+      let dateStr = "N/A";
+      if (achievement.date) {
+        if (achievement.date instanceof Date) {
+          dateStr = format(achievement.date, "yyyy-MM-dd");
+        } else if (typeof achievement.date.toDate === 'function') {
+          dateStr = format(achievement.date.toDate(), "yyyy-MM-dd");
+        }
+      }
       
       csvRows.push([
         `"${achievement.title?.replace(/"/g, '""') || ''}"`,
         `"${achievement.category || ''}"`,
         `"${achievement.level || 'N/A'}"`,
-        `"${date}"`,
+        `"${dateStr}"`,
         `"${achievement.status || ''}"`,
         `"${achievement.studentName || ''}"`,
         `"${achievement.rollNo || ''}"`,
         `"${achievement.branch || ''}"`,
         `"${achievement.year || ''}"`,
         `"${achievement.semester || ''}"`,
+        `"${achievement.sgpa || 'N/A'}"`, // Added SGPA in exported report
         `"${achievement.academicYear || ''}"`,
         `"${achievement.cgpa || ''}"`,
-        `"${achievement.sgpa || ''}"`,
       ].join(","));
     });
     
@@ -543,18 +549,19 @@ const ReportsPage = () => {
                         data={nbaData}
                         cx="50%"
                         cy="50%"
-                        labelLine={false}
-                        outerRadius={100}
+                        labelLine={true}
+                        outerRadius={90}
                         fill="#8884d8"
                         dataKey="value"
                         nameKey="name"
                         label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                        labelStyle={{ fontSize: '11px' }}
                       >
                         {nbaData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
-                      <Tooltip />
+                      <Tooltip formatter={(value) => [`${value} achievements`, 'Count']} />
                     </RechartsPieChart>
                   </ResponsiveContainer>
                 </div>
@@ -640,6 +647,7 @@ const ReportsPage = () => {
                       <TableHead>Year</TableHead>
                       <TableHead>Semester</TableHead>
                       <TableHead>SGPA</TableHead>
+                      <TableHead>CGPA</TableHead>
                       <TableHead>Status</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -666,6 +674,7 @@ const ReportsPage = () => {
                         <TableCell>{achievement.year}</TableCell>
                         <TableCell>{achievement.semester || "N/A"}</TableCell>
                         <TableCell>{achievement.sgpa || "N/A"}</TableCell>
+                        <TableCell>{achievement.cgpa || "N/A"}</TableCell>
                         <TableCell>
                           <Badge 
                             className={cn(
@@ -681,14 +690,14 @@ const ReportsPage = () => {
                     ))}
                     {achievements.length > 15 && (
                       <TableRow>
-                        <TableCell colSpan={9} className="text-center text-muted-foreground">
+                        <TableCell colSpan={10} className="text-center text-muted-foreground">
                           Showing 15 of {achievements.length} results. Download the CSV for full data.
                         </TableCell>
                       </TableRow>
                     )}
                     {achievements.length === 0 && (
                       <TableRow>
-                        <TableCell colSpan={9} className="text-center text-muted-foreground">
+                        <TableCell colSpan={10} className="text-center text-muted-foreground">
                           No achievements found matching the filter criteria.
                         </TableCell>
                       </TableRow>
