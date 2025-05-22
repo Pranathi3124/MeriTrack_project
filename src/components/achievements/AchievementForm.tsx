@@ -173,17 +173,17 @@ const AchievementForm: React.FC<AchievementFormProps> = ({ onSuccess }) => {
   // Function to render GPA fields
   const renderGPAFields = () => {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
           control={form.control}
           name="cgpa"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>CGPA</FormLabel>
+            <FormItem className="mb-2">
+              <FormLabel className="font-medium">CGPA</FormLabel>
               <FormControl>
                 <Input placeholder="Enter your CGPA (0-10)" {...field} />
               </FormControl>
-              <FormDescription>Enter value between 0-10</FormDescription>
+              <FormDescription className="text-xs">Enter value between 0-10</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -193,12 +193,12 @@ const AchievementForm: React.FC<AchievementFormProps> = ({ onSuccess }) => {
           control={form.control}
           name="sgpa"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>SGPA for Semester {watchSemester}</FormLabel>
+            <FormItem className="mb-2">
+              <FormLabel className="font-medium">SGPA for Semester {watchSemester}</FormLabel>
               <FormControl>
                 <Input placeholder={`Enter SGPA for Semester ${watchSemester || '?'} (0-10)`} {...field} />
               </FormControl>
-              <FormDescription>Enter value between 0-10</FormDescription>
+              <FormDescription className="text-xs">Enter value between 0-10</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -210,239 +210,264 @@ const AchievementForm: React.FC<AchievementFormProps> = ({ onSuccess }) => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {/* Title */}
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Achievement Title</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter achievement title" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        {/* Category */}
-        <FormField
-          control={form.control}
-          name="category"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Category</FormLabel>
-              <Select
-                onValueChange={(value) => {
-                  field.onChange(value);
-                  setSelectedCategory(value);
-                }}
-                defaultValue={field.value}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select achievement category" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="academic">Academic Excellence</SelectItem>
-                  <SelectItem value="technical">Technical Skills</SelectItem>
-                  <SelectItem value="research">Research & Projects</SelectItem>
-                  <SelectItem value="competition">Competitions</SelectItem>
-                  <SelectItem value="extra-curricular">Extra-Curricular</SelectItem>
-                  <SelectItem value="sports">Sports</SelectItem>
-                  <SelectItem value="internships">Internships</SelectItem>
-                  <SelectItem value="hackathon">Hackathons</SelectItem>
-                  <SelectItem value="workshops">Workshops</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        {/* Level - conditionally show different options for internships */}
-        <FormField
-          control={form.control}
-          name="level"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Achievement Level</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select achievement level" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {selectedCategory === "internships" ? (
-                    <>
-                      <SelectItem value="company">Company</SelectItem>
-                      <SelectItem value="startup">Startup</SelectItem>
-                      <SelectItem value="government">Government</SelectItem>
-                      <SelectItem value="research">Research Institution</SelectItem>
-                      <SelectItem value="international">International Organization</SelectItem>
-                    </>
-                  ) : (
-                    <>
-                      <SelectItem value="college">College Level</SelectItem>
-                      <SelectItem value="state">State/Regional Level</SelectItem>
-                      <SelectItem value="national">National Level</SelectItem>
-                      <SelectItem value="international">International Level</SelectItem>
-                    </>
-                  )}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        {/* Date */}
-        <FormField
-          control={form.control}
-          name="date"
-          render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Date of Achievement</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
+        {/* Basic Achievement Information Section */}
+        <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 shadow-sm">
+          <h3 className="text-lg font-semibold mb-4 text-college-maroon">Achievement Details</h3>
+          
+          <div className="space-y-4">
+            {/* Title */}
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="font-medium">Achievement Title</FormLabel>
                   <FormControl>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      {field.value ? (
-                        format(field.value, "PPP")
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
+                    <Input placeholder="Enter achievement title" {...field} />
                   </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
-                    disabled={(date) =>
-                      date > new Date() || date < new Date("1900-01-01")
-                    }
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Semester */}
-        <FormField
-          control={form.control}
-          name="semester"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Semester</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select semester" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="1">1st Semester</SelectItem>
-                  <SelectItem value="2">2nd Semester</SelectItem>
-                  <SelectItem value="3">3rd Semester</SelectItem>
-                  <SelectItem value="4">4th Semester</SelectItem>
-                  <SelectItem value="5">5th Semester</SelectItem>
-                  <SelectItem value="6">6th Semester</SelectItem>
-                  <SelectItem value="7">7th Semester</SelectItem>
-                  <SelectItem value="8">8th Semester</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Academic Year */}
-        <FormField
-          control={form.control}
-          name="academicYear"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Academic Year</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select academic year" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {academicYears.map((year) => (
-                    <SelectItem key={year} value={year}>{year}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Always show GPA fields regardless of category */}
-        {renderGPAFields()}
-        
-        {/* Description */}
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea 
-                  placeholder="Describe your achievement in detail" 
-                  className="min-h-[120px]"
-                  {...field} 
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        {/* Supporting Document */}
-        <FormField
-          control={form.control}
-          name="document"
-          render={() => (
-            <FormItem>
-              <FormLabel>Supporting Document (Optional)</FormLabel>
-              <FormControl>
-                <Input 
-                  type="file" 
-                  onChange={handleDocumentChange}
-                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                />
-              </FormControl>
-              <FormDescription>
-                Upload a certificate, screenshot, or any document to verify your achievement.
-                Max size: 5MB. Formats: PDF, DOC, DOCX, JPG, PNG.
-              </FormDescription>
-              <FormMessage />
-              {documentFile && (
-                <div className="text-sm text-gray-500">
-                  Selected file: {documentFile.name}
-                </div>
+                  <FormMessage />
+                </FormItem>
               )}
-            </FormItem>
-          )}
-        />
+            />
+            
+            {/* Category */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-medium">Category</FormLabel>
+                    <Select
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        setSelectedCategory(value);
+                      }}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select achievement category" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="academic">Academic Excellence</SelectItem>
+                        <SelectItem value="technical">Technical Skills</SelectItem>
+                        <SelectItem value="research">Research & Projects</SelectItem>
+                        <SelectItem value="competition">Competitions</SelectItem>
+                        <SelectItem value="extra-curricular">Extra-Curricular</SelectItem>
+                        <SelectItem value="sports">Sports</SelectItem>
+                        <SelectItem value="internships">Internships</SelectItem>
+                        <SelectItem value="hackathon">Hackathons</SelectItem>
+                        <SelectItem value="workshops">Workshops</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              {/* Level - conditionally show different options for internships */}
+              <FormField
+                control={form.control}
+                name="level"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-medium">Achievement Level</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select achievement level" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {selectedCategory === "internships" ? (
+                          <>
+                            <SelectItem value="company">Company</SelectItem>
+                            <SelectItem value="startup">Startup</SelectItem>
+                            <SelectItem value="government">Government</SelectItem>
+                            <SelectItem value="research">Research Institution</SelectItem>
+                            <SelectItem value="international">International Organization</SelectItem>
+                          </>
+                        ) : (
+                          <>
+                            <SelectItem value="college">College Level</SelectItem>
+                            <SelectItem value="state">State/Regional Level</SelectItem>
+                            <SelectItem value="national">National Level</SelectItem>
+                            <SelectItem value="international">International Level</SelectItem>
+                          </>
+                        )}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Academic Information Section */}
+        <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 shadow-sm">
+          <h3 className="text-lg font-semibold mb-4 text-college-maroon">Academic Information</h3>
+          
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Semester */}
+              <FormField
+                control={form.control}
+                name="semester"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-medium">Semester</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select semester" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="1">1st Semester</SelectItem>
+                        <SelectItem value="2">2nd Semester</SelectItem>
+                        <SelectItem value="3">3rd Semester</SelectItem>
+                        <SelectItem value="4">4th Semester</SelectItem>
+                        <SelectItem value="5">5th Semester</SelectItem>
+                        <SelectItem value="6">6th Semester</SelectItem>
+                        <SelectItem value="7">7th Semester</SelectItem>
+                        <SelectItem value="8">8th Semester</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Academic Year */}
+              <FormField
+                control={form.control}
+                name="academicYear"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-medium">Academic Year</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select academic year" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {academicYears.map((year) => (
+                          <SelectItem key={year} value={year}>{year}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Date */}
+            <FormField
+              control={form.control}
+              name="date"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel className="font-medium">Date of Achievement</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-full pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) =>
+                          date > new Date() || date < new Date("1900-01-01")
+                        }
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* GPA Fields */}
+            {renderGPAFields()}
+          </div>
+        </div>
+
+        {/* Description and Document Section */}
+        <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 shadow-sm">
+          <h3 className="text-lg font-semibold mb-4 text-college-maroon">Additional Information</h3>
+          
+          <div className="space-y-4">
+            {/* Description */}
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="font-medium">Description</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Describe your achievement in detail" 
+                      className="min-h-[120px]"
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            {/* Supporting Document */}
+            <FormField
+              control={form.control}
+              name="document"
+              render={() => (
+                <FormItem>
+                  <FormLabel className="font-medium">Supporting Document (Optional)</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="file" 
+                      onChange={handleDocumentChange}
+                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                    />
+                  </FormControl>
+                  <FormDescription className="text-xs">
+                    Upload a certificate, screenshot, or any document to verify your achievement.
+                    Max size: 5MB. Formats: PDF, DOC, DOCX, JPG, PNG.
+                  </FormDescription>
+                  <FormMessage />
+                  {documentFile && (
+                    <div className="text-sm text-gray-500 mt-1">
+                      Selected file: {documentFile.name}
+                    </div>
+                  )}
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
         
         <Button type="submit" className="w-full" disabled={isSubmitting}>
           {isSubmitting ? "Submitting..." : "Submit Achievement"}
