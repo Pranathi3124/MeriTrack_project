@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
@@ -29,10 +28,28 @@ const LEVEL_COLORS = {
   international: '#D81B60' // Pink
 };
 
-const StudentStats = ({ achievements }) => {
+// Define TypeScript interface for achievement data
+interface Achievement {
+  category?: string;
+  level?: string;
+  status?: string;
+  semester?: string;
+  cgpa?: string | number;
+  sgpa?: string | number;
+  [key: string]: any;
+}
+
+// Type for semester GPA data
+interface SemesterGPAData {
+  count: number;
+  totalCGPA: number;
+  totalSGPA: number;
+}
+
+const StudentStats = ({ achievements }: { achievements: Achievement[] }) => {
   // Count achievements by category
   const getCategoryCounts = () => {
-    const counts = {};
+    const counts: Record<string, number> = {};
     
     // Define all possible categories
     const categories = {
@@ -61,7 +78,7 @@ const StudentStats = ({ achievements }) => {
     return Object.entries(counts)
       .filter(([_, count]) => count > 0) // Only include categories with achievements
       .map(([category, count]) => ({
-        name: categories[category] || category,
+        name: categories[category as keyof typeof categories] || category,
         value: count
       }));
   };
@@ -76,8 +93,8 @@ const StudentStats = ({ achievements }) => {
     
     achievements.forEach(achievement => {
       const status = achievement.status;
-      if (status && counts[status] !== undefined) {
-        counts[status]++;
+      if (status && counts[status as keyof typeof counts] !== undefined) {
+        counts[status as keyof typeof counts]++;
       }
     });
     
@@ -102,8 +119,8 @@ const StudentStats = ({ achievements }) => {
     
     achievements.forEach(achievement => {
       const level = achievement.level;
-      if (level && counts[level] !== undefined) {
-        counts[level]++;
+      if (level && counts[level as keyof typeof counts] !== undefined) {
+        counts[level as keyof typeof counts]++;
       }
     });
     
@@ -117,7 +134,7 @@ const StudentStats = ({ achievements }) => {
   };
 
   // Format level names for better display
-  const formatLevelName = (level) => {
+  const formatLevelName = (level: string) => {
     switch(level) {
       case 'college': return 'College';
       case 'state': return 'State';
@@ -137,7 +154,7 @@ const StudentStats = ({ achievements }) => {
   
   // Get semester data for academic achievements
   const getSemesterData = () => {
-    const semesterCounts = {};
+    const semesterCounts: Record<string, number> = {};
     
     achievements.forEach(achievement => {
       if (achievement.semester) {
@@ -162,7 +179,7 @@ const StudentStats = ({ achievements }) => {
   
   // Get academic performance data (GPA trends)
   const getAcademicData = () => {
-    const semesterGpaMap = {};
+    const semesterGpaMap: Record<string, SemesterGPAData> = {};
     
     achievements
       .filter(a => a.category === 'academic' && (a.cgpa || a.sgpa))
@@ -174,12 +191,12 @@ const StudentStats = ({ achievements }) => {
           }
           
           if (achievement.cgpa) {
-            semesterGpaMap[semester].totalCGPA += parseFloat(achievement.cgpa);
+            semesterGpaMap[semester].totalCGPA += parseFloat(achievement.cgpa.toString());
             semesterGpaMap[semester].count++;
           }
           
           if (achievement.sgpa) {
-            semesterGpaMap[semester].totalSGPA += parseFloat(achievement.sgpa);
+            semesterGpaMap[semester].totalSGPA += parseFloat(achievement.sgpa.toString());
           }
         }
       });
@@ -210,10 +227,10 @@ const StudentStats = ({ achievements }) => {
     const levels = ['college', 'state', 'national', 'international', 'company', 'startup', 'government', 'research'];
     
     // Initialize data structure
-    const data = {};
+    const data: Record<string, any> = {};
     Object.keys(categories).forEach(category => {
       data[category] = {
-        name: categories[category],
+        name: categories[category as keyof typeof categories],
         college: 0,
         state: 0,
         national: 0,
