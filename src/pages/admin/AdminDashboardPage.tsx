@@ -38,45 +38,60 @@ const AdminDashboardPage = () => {
     fetchAuditLogs();
   }, []);
 
+  // Card colors for better visual appeal
+  const cardColors = [
+    "bg-gradient-to-br from-red-50 to-red-100 border-red-200",
+    "bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200",
+    "bg-gradient-to-br from-green-50 to-green-100 border-green-200",
+    "bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200"
+  ];
+
+  const iconColors = [
+    "text-red-500",
+    "text-blue-500",
+    "text-green-500",
+    "text-amber-500"
+  ];
+
   return (
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-3xl font-bold mb-8 text-college-gray">Admin Dashboard</h1>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card>
+        <Card className={`${cardColors[0]} transition-transform hover:scale-105`}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Students</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <Users className={`h-5 w-5 ${iconColors[0]}`} />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">345</div>
             <p className="text-xs text-muted-foreground">+5 from last month</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className={`${cardColors[1]} transition-transform hover:scale-105`}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Faculty Members</CardTitle>
-            <UserPen className="h-4 w-4 text-muted-foreground" />
+            <UserPen className={`h-5 w-5 ${iconColors[1]}`} />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">42</div>
             <p className="text-xs text-muted-foreground">+2 new this month</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className={`${cardColors[2]} transition-transform hover:scale-105`}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Departments</CardTitle>
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
+            <BookOpen className={`h-5 w-5 ${iconColors[2]}`} />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">6</div>
             <p className="text-xs text-muted-foreground">Engineering branches</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className={`${cardColors[3]} transition-transform hover:scale-105`}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Achievements</CardTitle>
-            <Medal className="h-4 w-4 text-muted-foreground" />
+            <Medal className={`h-5 w-5 ${iconColors[3]}`} />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">743</div>
@@ -86,7 +101,7 @@ const AdminDashboardPage = () => {
       </div>
       
       <Tabs defaultValue="student-management" className="space-y-4">
-        <TabsList className="flex flex-wrap gap-2">
+        <TabsList className="flex flex-wrap gap-2 overflow-x-auto pb-2 justify-start">
           <TabsTrigger value="student-management">Student Management</TabsTrigger>
           <TabsTrigger value="faculty-management">Faculty Management</TabsTrigger>
           <TabsTrigger value="audit-logs">Audit Logs</TabsTrigger>

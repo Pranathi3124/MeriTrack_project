@@ -93,6 +93,15 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Improved responsive styles */
+  h1 {
+    @apply text-2xl sm:text-3xl font-bold;
+  }
+  
+  h2 {
+    @apply text-xl sm:text-2xl font-semibold;
+  }
 }
 
 /* Custom animations */
@@ -115,4 +124,42 @@
   transform: translateY(-5px);
   transition: transform 0.3s ease;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Responsive enhancements */
+@media (max-width: 640px) {
+  .recharts-wrapper .recharts-legend-wrapper {
+    position: relative !important;
+    margin-top: 8px !important;
+  }
+  
+  .recharts-default-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .recharts-legend-item {
+    margin: 0 8px !important;
+  }
+}
+
+/* Table responsiveness */
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Better pie chart tooltips */
+.recharts-tooltip-wrapper {
+  z-index: 100;
+}
+
+/* Card hover effects */
+.card-hover {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
 }

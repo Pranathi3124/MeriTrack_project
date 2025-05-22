@@ -46,11 +46,11 @@ const AppLayout: React.FC<AppLayoutProps> = ({ requiredRole }) => {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
-      <main className="flex-1">
+      <main className="flex-1 overflow-x-hidden">
         <Outlet />
       </main>
       <footer className="py-6 bg-gray-800 text-white">
-        <div className="container mx-auto text-center">
+        <div className="container mx-auto text-center px-4">
           <p>© {new Date().getFullYear()} MeriTrack. All rights reserved.</p>
         </div>
       </footer>

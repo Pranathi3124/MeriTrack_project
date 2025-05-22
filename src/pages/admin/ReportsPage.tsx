@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { getAllAchievements } from "@/lib/firebase";
 import { toast } from "@/components/ui/use-toast";
-import { Badge } from "@/components/ui/badge"; // Added missing Badge import
+import { Badge } from "@/components/ui/badge";
 import AchievementAnalytics from "@/components/analytics/AchievementAnalytics";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
@@ -141,7 +141,7 @@ const ReportsPage = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
         <h1 className="text-2xl font-bold">Achievement Reports</h1>
         
-        <div className="flex space-x-2">
+        <div className="flex flex-wrap gap-2">
           <Button 
             variant="outline" 
             onClick={handleResetFilters}
@@ -166,7 +166,7 @@ const ReportsPage = () => {
             <CardDescription>Customize reports by applying filters</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               <div className="space-y-2">
                 <Label>Branch</Label>
                 <Select
@@ -223,6 +223,7 @@ const ReportsPage = () => {
                     <SelectItem value="research">Research & Projects</SelectItem>
                     <SelectItem value="competition">Competitions</SelectItem>
                     <SelectItem value="extra-curricular">Extra-Curricular</SelectItem>
+                    <SelectItem value="internships">Internships</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -242,24 +243,28 @@ const ReportsPage = () => {
                     <SelectItem value="state">State/Regional Level</SelectItem>
                     <SelectItem value="national">National Level</SelectItem>
                     <SelectItem value="international">International Level</SelectItem>
+                    <SelectItem value="company">Company</SelectItem>
+                    <SelectItem value="startup">Startup</SelectItem>
+                    <SelectItem value="government">Government</SelectItem>
+                    <SelectItem value="research">Research Institution</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               
               <div className="space-y-2">
                 <Label>Date Range</Label>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
                         className={cn(
-                          "w-full justify-start text-left font-normal",
+                          "w-full justify-start text-left font-normal truncate",
                           !filters.startDate && "text-muted-foreground"
                         )}
                       >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {filters.startDate ? format(filters.startDate, "PPP") : "Start date"}
+                        <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
+                        {filters.startDate ? format(filters.startDate, "PP") : "Start date"}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
@@ -277,12 +282,12 @@ const ReportsPage = () => {
                       <Button
                         variant="outline"
                         className={cn(
-                          "w-full justify-start text-left font-normal",
+                          "w-full justify-start text-left font-normal truncate",
                           !filters.endDate && "text-muted-foreground"
                         )}
                       >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {filters.endDate ? format(filters.endDate, "PPP") : "End date"}
+                        <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
+                        {filters.endDate ? format(filters.endDate, "PP") : "End date"}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
