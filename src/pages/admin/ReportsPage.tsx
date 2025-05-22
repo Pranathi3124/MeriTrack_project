@@ -149,7 +149,7 @@ const ReportsPage = () => {
       "Branch", 
       "Year",
       "Semester",
-      "Semester GPA", // Added SGPA as a separate column to make it clearer
+      "Semester GPA",
       "Academic Year",
       "CGPA"
     ].join(","));
@@ -177,7 +177,7 @@ const ReportsPage = () => {
         `"${achievement.branch || ''}"`,
         `"${achievement.year || ''}"`,
         `"${achievement.semester || ''}"`,
-        `"${achievement.sgpa || 'N/A'}"`, // Added SGPA in exported report
+        `"${achievement.sgpa || 'N/A'}"`,
         `"${achievement.academicYear || ''}"`,
         `"${achievement.cgpa || ''}"`,
       ].join(","));
@@ -241,6 +241,28 @@ const ReportsPage = () => {
   
   // Colors for pie chart
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
+  
+  // Custom renderer for Pie Chart labels with better positioning
+  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }: any) => {
+    const RADIAN = Math.PI / 180;
+    const radius = outerRadius + 30;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    return (
+      <text 
+        x={x} 
+        y={y} 
+        fill={COLORS[index % COLORS.length]}
+        textAnchor={x > cx ? 'start' : 'end'} 
+        dominantBaseline="central"
+        fontSize="12"
+        fontWeight="500"
+      >
+        {`${name}: ${(percent * 100).toFixed(0)}%`}
+      </text>
+    );
+  };
   
   return (
     <div className="container mx-auto py-8 px-4">
@@ -549,13 +571,12 @@ const ReportsPage = () => {
                         data={nbaData}
                         cx="50%"
                         cy="50%"
-                        labelLine={true}
+                        labelLine={false}
                         outerRadius={90}
                         fill="#8884d8"
                         dataKey="value"
                         nameKey="name"
-                        label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                        labelStyle={{ fontSize: '11px' }}
+                        label={renderCustomizedLabel}
                       >
                         {nbaData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
