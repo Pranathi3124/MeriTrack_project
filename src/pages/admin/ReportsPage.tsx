@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Download, Calendar as CalendarIcon, Filter, FileBarChart2 } from "lucide-react";
+import { Download, Calendar as CalendarIcon, Filter, FileBarChart2, BarChart3, PieChart } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,6 +16,12 @@ import { Badge } from "@/components/ui/badge";
 import AchievementAnalytics from "@/components/analytics/AchievementAnalytics";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  ChartContainer, 
+  ChartTooltip, 
+  ChartTooltipContent
+} from "@/components/ui/chart";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart as RechartsPieChart, Pie, Cell } from "recharts";
 
 const ReportsPage = () => {
   const { user } = useAuth();
@@ -28,6 +34,23 @@ const ReportsPage = () => {
     level: "all",
     startDate: undefined as Date | undefined,
     endDate: undefined as Date | undefined
+  });
+  
+  // NAAC and NBA specific metrics
+  const [naacMetrics, setNaacMetrics] = useState({
+    totalResearchPublications: 0,
+    internationalConferences: 0,
+    nationalConferences: 0,
+    patents: 0,
+    industryCollaborations: 0
+  });
+  
+  const [nbaMetrics, setNbaMetrics] = useState({
+    programOutcomes: 0,
+    courseOutcomes: 0,
+    studentPlacement: 0,
+    higherEducation: 0,
+    entrepreneurship: 0
   });
   
   useEffect(() => {
@@ -50,6 +73,9 @@ const ReportsPage = () => {
       
       const achievementsData = await getAllAchievements(apiFilters);
       setAchievements(achievementsData);
+      
+      // Calculate NAAC and NBA metrics
+      calculateAccreditationMetrics(achievementsData);
     } catch (error) {
       console.error("Error fetching achievements:", error);
       toast({
@@ -59,6 +85,29 @@ const ReportsPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+  
+  const calculateAccreditationMetrics = (data: any[]) => {
+    // NAAC metrics
+    const naac = {
+      totalResearchPublications: data.filter(a => a.category === 'research' || a.title?.toLowerCase().includes('research') || a.title?.toLowerCase().includes('publication')).length,
+      internationalConferences: data.filter(a => a.level === 'international' && a.category !== 'internships').length,
+      nationalConferences: data.filter(a => a.level === 'national').length,
+      patents: data.filter(a => a.title?.toLowerCase().includes('patent')).length,
+      industryCollaborations: data.filter(a => a.title?.toLowerCase().includes('industry') || a.title?.toLowerCase().includes('collaboration')).length
+    };
+    
+    // NBA metrics
+    const nba = {
+      programOutcomes: data.filter(a => a.title?.toLowerCase().includes('program outcome') || a.title?.toLowerCase().includes('po')).length,
+      courseOutcomes: data.filter(a => a.title?.toLowerCase().includes('course outcome') || a.title?.toLowerCase().includes('co')).length,
+      studentPlacement: data.filter(a => a.category === 'internships' || a.title?.toLowerCase().includes('placement') || a.title?.toLowerCase().includes('job offer')).length,
+      higherEducation: data.filter(a => a.title?.toLowerCase().includes('higher education') || a.title?.toLowerCase().includes('masters') || a.title?.toLowerCase().includes('phd')).length,
+      entrepreneurship: data.filter(a => a.title?.toLowerCase().includes('startup') || a.title?.toLowerCase().includes('entrepreneur')).length
+    };
+    
+    setNaacMetrics(naac);
+    setNbaMetrics(nba);
   };
   
   const handleFilterChange = (name: string, value: string | Date | undefined) => {
@@ -81,6 +130,7 @@ const ReportsPage = () => {
     
     getAllAchievements({}).then((achievementsData) => {
       setAchievements(achievementsData);
+      calculateAccreditationMetrics(achievementsData);
     });
   };
   
@@ -112,11 +162,11 @@ const ReportsPage = () => {
         : format(achievement.date.toDate(), "yyyy-MM-dd");
       
       csvRows.push([
-        `"${achievement.title.replace(/"/g, '""')}"`,
-        `"${achievement.category}"`,
+        `"${achievement.title?.replace(/"/g, '""') || ''}"`,
+        `"${achievement.category || ''}"`,
         `"${achievement.level || 'N/A'}"`,
         `"${date}"`,
-        `"${achievement.status}"`,
+        `"${achievement.status || ''}"`,
         `"${achievement.studentName || ''}"`,
         `"${achievement.rollNo || ''}"`,
         `"${achievement.branch || ''}"`,
@@ -160,6 +210,32 @@ const ReportsPage = () => {
   };
   
   const stats = getTotalsByStatus();
+  
+  // Generate NAAC/NBA summary data for charts
+  const generateAccreditationChartData = () => {
+    const naacData = [
+      { name: 'Research Publications', value: naacMetrics.totalResearchPublications },
+      { name: 'International Conferences', value: naacMetrics.internationalConferences },
+      { name: 'National Conferences', value: naacMetrics.nationalConferences },
+      { name: 'Patents', value: naacMetrics.patents },
+      { name: 'Industry Collaborations', value: naacMetrics.industryCollaborations },
+    ];
+    
+    const nbaData = [
+      { name: 'Program Outcomes', value: nbaMetrics.programOutcomes },
+      { name: 'Course Outcomes', value: nbaMetrics.courseOutcomes },
+      { name: 'Student Placement', value: nbaMetrics.studentPlacement },
+      { name: 'Higher Education', value: nbaMetrics.higherEducation },
+      { name: 'Entrepreneurship', value: nbaMetrics.entrepreneurship },
+    ];
+    
+    return { naacData, nbaData };
+  };
+  
+  const { naacData, nbaData } = generateAccreditationChartData();
+  
+  // Colors for pie chart
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
   
   return (
     <div className="container mx-auto py-8 px-4">
@@ -240,6 +316,7 @@ const ReportsPage = () => {
       <Tabs defaultValue="analytics" className="space-y-6">
         <TabsList className="mb-2">
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="accreditation">NAAC & NBA</TabsTrigger>
           <TabsTrigger value="filters">Advanced Filters</TabsTrigger>
           <TabsTrigger value="table">Data Table</TabsTrigger>
         </TabsList>
@@ -415,6 +492,128 @@ const ReportsPage = () => {
           )}
         </TabsContent>
         
+        <TabsContent value="accreditation" className="space-y-6">
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* NAAC Metrics */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5" />
+                  NAAC Metrics
+                </CardTitle>
+                <CardDescription>Key indicators for NAAC accreditation</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={naacData} layout="vertical">
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis type="number" />
+                      <YAxis dataKey="name" type="category" width={150} />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="value" fill="#8884d8" name="Count" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                  {naacData.map((item, index) => (
+                    <div key={`naac-${index}`} className="flex justify-between border-b pb-2">
+                      <span className="text-sm font-medium">{item.name}:</span>
+                      <span className="font-bold">{item.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* NBA Metrics */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <PieChart className="h-5 w-5" />
+                  NBA Outcomes
+                </CardTitle>
+                <CardDescription>Program outcomes and attainment</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RechartsPieChart>
+                      <Pie
+                        data={nbaData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={100}
+                        fill="#8884d8"
+                        dataKey="value"
+                        nameKey="name"
+                        label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {nbaData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </RechartsPieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                  {nbaData.map((item, index) => (
+                    <div key={`nba-${index}`} className="flex justify-between border-b pb-2">
+                      <span className="text-sm font-medium">{item.name}:</span>
+                      <span className="font-bold">{item.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* Academic Progression */}
+            <Card className="md:col-span-2">
+              <CardHeader>
+                <CardTitle>Academic Progression & Achievements</CardTitle>
+                <CardDescription>Student growth and academic performance correlation</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-green-50 p-4 rounded-lg">
+                      <h3 className="font-medium text-green-800">Top Performing Students</h3>
+                      <p className="text-2xl font-bold">{achievements.filter(a => Number(a.cgpa) > 9.0).length}</p>
+                      <p className="text-sm text-green-700">Students with CGPA > 9.0</p>
+                    </div>
+                    
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <h3 className="font-medium text-blue-800">Research Participation</h3>
+                      <p className="text-2xl font-bold">{achievements.filter(a => a.category === 'research').length}</p>
+                      <p className="text-sm text-blue-700">Students engaged in research</p>
+                    </div>
+                    
+                    <div className="bg-purple-50 p-4 rounded-lg">
+                      <h3 className="font-medium text-purple-800">Placement & Internships</h3>
+                      <p className="text-2xl font-bold">{achievements.filter(a => a.category === 'internships').length}</p>
+                      <p className="text-sm text-purple-700">Students with industry exposure</p>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-slate-50 p-4 rounded-lg">
+                    <h3 className="font-medium mb-2">Key Observations for NAAC/NBA</h3>
+                    <ul className="list-disc pl-5 space-y-1">
+                      <li>Student participation in extra-curricular activities: <strong>{achievements.filter(a => a.category === 'extra-curricular').length} students</strong></li>
+                      <li>Technical skill development: <strong>{achievements.filter(a => a.category === 'technical').length} achievements</strong></li>
+                      <li>International exposure: <strong>{achievements.filter(a => a.level === 'international').length} participants</strong></li>
+                      <li>Industry-academia collaboration: <strong>{naacMetrics.industryCollaborations} initiatives</strong></li>
+                      <li>Entrepreneurship ventures: <strong>{nbaMetrics.entrepreneurship} startups</strong></li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+        
         <TabsContent value="table">
           {/* Summary Table */}
           <Card className="shadow-sm">
@@ -441,6 +640,7 @@ const ReportsPage = () => {
                       <TableHead>Branch</TableHead>
                       <TableHead>Year</TableHead>
                       <TableHead>Semester</TableHead>
+                      <TableHead>SGPA</TableHead>
                       <TableHead>Status</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -466,6 +666,7 @@ const ReportsPage = () => {
                         <TableCell>{achievement.branch}</TableCell>
                         <TableCell>{achievement.year}</TableCell>
                         <TableCell>{achievement.semester || "N/A"}</TableCell>
+                        <TableCell>{achievement.sgpa || "N/A"}</TableCell>
                         <TableCell>
                           <Badge 
                             className={cn(
@@ -481,14 +682,14 @@ const ReportsPage = () => {
                     ))}
                     {achievements.length > 15 && (
                       <TableRow>
-                        <TableCell colSpan={8} className="text-center text-muted-foreground">
+                        <TableCell colSpan={9} className="text-center text-muted-foreground">
                           Showing 15 of {achievements.length} results. Download the CSV for full data.
                         </TableCell>
                       </TableRow>
                     )}
                     {achievements.length === 0 && (
                       <TableRow>
-                        <TableCell colSpan={8} className="text-center text-muted-foreground">
+                        <TableCell colSpan={9} className="text-center text-muted-foreground">
                           No achievements found matching the filter criteria.
                         </TableCell>
                       </TableRow>
