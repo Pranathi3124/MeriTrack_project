@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
@@ -255,7 +256,10 @@ const StudentStats = ({ achievements }: { achievements: Achievement[] }) => {
     return Object.values(data).filter(categoryData => {
       return Object.entries(categoryData)
         .filter(([key, _]) => key !== 'name')
-        .some(([_, count]) => count > 0);
+        .some(([_, count]) => {
+          // Fix the type error by explicitly casting count to a number
+          return (count as number) > 0;
+        });
     });
   };
   
