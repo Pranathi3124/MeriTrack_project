@@ -84,6 +84,7 @@ const AchievementForm: React.FC<AchievementFormProps> = ({ onSuccess }) => {
   });
   
   const watchCategory = form.watch("category");
+  const watchSemester = form.watch("semester");
   
   if (watchCategory !== selectedCategory) {
     setSelectedCategory(watchCategory);
@@ -359,7 +360,7 @@ const AchievementForm: React.FC<AchievementFormProps> = ({ onSuccess }) => {
                 <FormItem>
                   <FormLabel>CGPA</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter your CGPA" {...field} />
+                    <Input placeholder="Enter your CGPA (0-10)" {...field} />
                   </FormControl>
                   <FormDescription>Enter value between 0-10</FormDescription>
                   <FormMessage />
@@ -372,9 +373,9 @@ const AchievementForm: React.FC<AchievementFormProps> = ({ onSuccess }) => {
               name="sgpa"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>SGPA</FormLabel>
+                  <FormLabel>SGPA for Semester {watchSemester}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter your SGPA" {...field} />
+                    <Input placeholder={`Enter SGPA for Semester ${watchSemester || '?'} (0-10)`} {...field} />
                   </FormControl>
                   <FormDescription>Enter value between 0-10</FormDescription>
                   <FormMessage />
