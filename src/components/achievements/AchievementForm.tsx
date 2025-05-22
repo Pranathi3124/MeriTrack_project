@@ -80,6 +80,8 @@ const AchievementForm: React.FC<AchievementFormProps> = ({ onSuccess }) => {
       description: "",
       semester: "",
       academicYear: academicYears[0],
+      cgpa: "",
+      sgpa: "",
     },
   });
   
@@ -120,6 +122,7 @@ const AchievementForm: React.FC<AchievementFormProps> = ({ onSuccess }) => {
         status: string;
         cgpa?: string;
         sgpa?: string;
+        submissionDate: Date;
       } = {
         title: values.title,
         category: values.category,
@@ -134,12 +137,16 @@ const AchievementForm: React.FC<AchievementFormProps> = ({ onSuccess }) => {
         branch: userData.branch || "",
         year: userData.year || "",
         status: "pending",
+        submissionDate: new Date(),
       };
       
-      // Add academic fields if category is academic
-      if (values.category === "academic") {
-        achievementData.cgpa = values.cgpa || "";
-        achievementData.sgpa = values.sgpa || "";
+      // Always include academic fields if provided, even for non-academic categories
+      if (values.cgpa) {
+        achievementData.cgpa = values.cgpa;
+      }
+      
+      if (values.sgpa) {
+        achievementData.sgpa = values.sgpa;
       }
       
       // Add achievement to database
@@ -161,6 +168,43 @@ const AchievementForm: React.FC<AchievementFormProps> = ({ onSuccess }) => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Function to render GPA fields
+  const renderGPAFields = () => {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FormField
+          control={form.control}
+          name="cgpa"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>CGPA</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter your CGPA (0-10)" {...field} />
+              </FormControl>
+              <FormDescription>Enter value between 0-10</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="sgpa"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>SGPA for Semester {watchSemester}</FormLabel>
+              <FormControl>
+                <Input placeholder={`Enter SGPA for Semester ${watchSemester || '?'} (0-10)`} {...field} />
+              </FormControl>
+              <FormDescription>Enter value between 0-10</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+    );
   };
 
   return (
@@ -350,40 +394,8 @@ const AchievementForm: React.FC<AchievementFormProps> = ({ onSuccess }) => {
           )}
         />
 
-        {/* Conditional CGPA/SGPA fields for academic category */}
-        {selectedCategory === "academic" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="cgpa"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>CGPA</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter your CGPA (0-10)" {...field} />
-                  </FormControl>
-                  <FormDescription>Enter value between 0-10</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="sgpa"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>SGPA for Semester {watchSemester}</FormLabel>
-                  <FormControl>
-                    <Input placeholder={`Enter SGPA for Semester ${watchSemester || '?'} (0-10)`} {...field} />
-                  </FormControl>
-                  <FormDescription>Enter value between 0-10</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        )}
+        {/* Always show GPA fields regardless of category */}
+        {renderGPAFields()}
         
         {/* Description */}
         <FormField
